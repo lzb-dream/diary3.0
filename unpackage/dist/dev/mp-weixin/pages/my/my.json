@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "uni-app",
+  "usingComponents": {
+    "uni-popup": "../../uni_modules/uni-popup/components/uni-popup/uni-popup",
+    "uni-segmented-control": "../../uni_modules/uni-segmented-control/components/uni-segmented-control/uni-segmented-control",
+    "my-diary": "../../components/my/MyDiary",
+    "love-diary": "../../components/my/LoveDiary",
+    "share-diary": "../../components/my/ShareDiary"
+  }
+}

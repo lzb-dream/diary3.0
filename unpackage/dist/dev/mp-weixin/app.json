@@ -1,0 +1,43 @@
+{
+  "pages": [
+    "pages/record/record",
+    "pages/square/square",
+    "pages/my/my"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uni-app",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#333333",
+    "selectedColor": "#1296db",
+    "borderStyle": "black",
+    "backgroundColor": "#fff",
+    "list": [
+      {
+        "pagePath": "pages/record/record",
+        "text": "记录生活",
+        "iconPath": "static/record_0.png",
+        "selectedIconPath": "static/record_1.png"
+      },
+      {
+        "pagePath": "pages/square/square",
+        "text": "日记广场",
+        "iconPath": "static/love_0.png",
+        "selectedIconPath": "static/love_1.png"
+      },
+      {
+        "pagePath": "pages/my/my",
+        "text": "我的",
+        "iconPath": "static/my_0.png",
+        "selectedIconPath": "static/my_1.png"
+      }
+    ]
+  },
+  "requiredPrivateInfos": [
+    "chooseLocation"
+  ],
+  "usingComponents": {}
+}

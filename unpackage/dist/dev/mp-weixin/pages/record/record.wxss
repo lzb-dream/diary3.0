@@ -1,0 +1,7 @@
+.save.data-v-3b6eb0a6 {
+  position: fixed;
+  bottom: 0;
+  background-image: linear-gradient(to right, pink, yellow);
+  width: 100%;
+  z-index: 999;
+}

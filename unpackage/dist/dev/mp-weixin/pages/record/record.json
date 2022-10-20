@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "love日记本",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "weather-and-address": "../../components/WeatherAndAddress"
+  }
+}
