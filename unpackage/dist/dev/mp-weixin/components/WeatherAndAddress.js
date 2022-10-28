@@ -13,68 +13,97 @@ if (!Math) {
 const FilePicker = () => "./FilePicker.js";
 const _sfc_main = {
   __name: "WeatherAndAddress",
-  emits: ["diaryFocus"],
-  setup(__props, { emit: emits }) {
+  setup(__props) {
     common_vendor.useCssVars((_ctx) => ({
       "1ec23634-statusBarHeight": common_vendor.unref(statusBarHeight)
     }));
-    let statusBarHeight = common_vendor.inject("statusBarHeight") * 2 + "rpx", datetimesingle = common_vendor.ref(null), diary = common_vendor.ref(null), weather = common_vendor.ref(null), mood = common_vendor.ref(null);
+    const myStore = common_vendor.useStore();
+    let statusBarHeight = common_vendor.inject("statusBarHeight") * 2 + "rpx", diary = common_vendor.ref(null), weather = common_vendor.ref(myStore.state.record.weatherList[0]), mood = common_vendor.ref(myStore.state.record.moodList[0]);
     common_vendor.ref(0);
-    let address = common_vendor.ref(null);
-    const myStore = common_vendor.useStore(), weatherList = myStore.state.record.weatherList, moodList = myStore.state.record.moodList;
     function getWeather_Mood(e, type) {
       if (type === "weather") {
-        weather.value = weatherList[e.detail.value];
+        weather.value = myStore.state.record.weatherList[e.detail.value];
+        myStore.commit("record/changeState", { name: "weather", value: weather.value });
       } else if (type === "mood") {
-        mood.value = moodList[e.detail.value];
+        mood.value = myStore.state.record.moodList[e.detail.value];
+        myStore.commit("record/changeState", { name: "mood", value: mood.value });
       }
     }
     async function getAddress() {
       const ad = await common_vendor.index.chooseLocation();
-      try {
-        address.value = ad.address.split("\u5E02")[1] + ad.name;
-      } catch {
-        address.value = ad.name;
-      }
+      console.log(ad);
+      myStore.commit("record/changeState", { name: "address", value: ad.name });
+    }
+    function diaryDispose(value) {
+      let test = value.trim();
+      return test;
     }
     common_vendor.onMounted(() => {
-      datetimesingle.value = Date.now() - 2 * 24 * 3600 * 1e3;
-      console.log(datetimesingle.value);
+      myStore.commit("record/changeState", { name: "addTime", value: Date.now() });
+      console.log(myStore.state.record);
     });
-    common_vendor.watch(diary, () => {
-      emits("diaryFocus", diary);
+    common_vendor.watch(diary, (nv) => {
+      let diary2 = diaryDispose(nv);
+      myStore.commit("record/changeState", { name: "diary", value: diary2 });
+      console.log(myStore.state.record.diary);
     });
-    common_vendor.watch(mood, (nv) => {
-      console.log(nv);
-    });
+    function save() {
+      let ad = common_vendor.index.getStorageSync("address");
+      if (ad !== myStore.state.record.address) {
+        common_vendor.index.showModal({
+          title: "\u662F\u5426\u5C06\u5730\u5740\u4FDD\u5B58\u4E3A\u9ED8\u8BA4\u5730\u5740",
+          success: (res) => {
+            if (res.confirm) {
+              common_vendor.index.setStorageSync("address", myStore.state.record.address);
+            }
+          }
+        });
+      }
+      console.log(myStore.state.record);
+    }
     return (_ctx, _cache) => {
-      return {
+      return common_vendor.e({
         a: common_vendor.unref(weather),
         b: common_vendor.o(($event) => common_vendor.isRef(weather) ? weather.value = $event.detail.value : weather = $event.detail.value),
-        c: common_vendor.unref(weatherList),
-        d: common_vendor.o(($event) => getWeather_Mood($event, "weather")),
-        e: common_vendor.unref(mood),
-        f: common_vendor.o(($event) => common_vendor.isRef(mood) ? mood.value = $event.detail.value : mood = $event.detail.value),
-        g: common_vendor.unref(moodList),
-        h: common_vendor.o(($event) => getWeather_Mood($event, "mood")),
-        i: common_vendor.unref(address),
-        j: common_vendor.o(($event) => common_vendor.isRef(address) ? address.value = $event.detail.value : address = $event.detail.value),
-        k: common_vendor.o(getAddress),
-        l: common_vendor.p({
+        c: common_vendor.p({
+          type: "bottom",
+          size: "30",
+          color: "gray"
+        }),
+        d: _ctx.$store.state.record.weatherList,
+        e: common_vendor.o(($event) => getWeather_Mood($event, "weather")),
+        f: common_vendor.unref(mood),
+        g: common_vendor.o(($event) => common_vendor.isRef(mood) ? mood.value = $event.detail.value : mood = $event.detail.value),
+        h: common_vendor.p({
+          type: "bottom",
+          size: "30",
+          color: "gray"
+        }),
+        i: _ctx.$store.state.record.moodList,
+        j: common_vendor.o(($event) => getWeather_Mood($event, "mood")),
+        k: _ctx.$store.state.record.address,
+        l: common_vendor.o(($event) => _ctx.$store.state.record.address = $event.detail.value),
+        m: common_vendor.o(getAddress),
+        n: common_vendor.p({
           type: "location-filled",
-          size: "30"
+          size: "30",
+          color: "#cc86d1"
         }),
-        m: common_vendor.o(_ctx.changeLog),
-        n: common_vendor.o(($event) => common_vendor.isRef(datetimesingle) ? datetimesingle.value = $event : datetimesingle = $event),
-        o: common_vendor.p({
+        o: common_vendor.o(_ctx.changeLog),
+        p: common_vendor.o(($event) => _ctx.$store.state.record.addTime = $event),
+        q: common_vendor.p({
           type: "datetime",
-          modelValue: common_vendor.unref(datetimesingle)
+          modelValue: _ctx.$store.state.record.addTime
         }),
-        p: common_vendor.s(_ctx.__cssVars()),
-        q: common_vendor.s(_ctx.__cssVars()),
-        r: common_vendor.unref(diary),
-        s: common_vendor.o(($event) => common_vendor.isRef(diary) ? diary.value = $event.detail.value : diary = $event.detail.value)
-      };
+        r: _ctx.$store.state.record.diary
+      }, _ctx.$store.state.record.diary ? {
+        s: common_vendor.o(save)
+      } : {}, {
+        t: common_vendor.s(_ctx.__cssVars()),
+        v: common_vendor.s(_ctx.__cssVars()),
+        w: common_vendor.unref(diary),
+        x: common_vendor.o(($event) => common_vendor.isRef(diary) ? diary.value = $event.detail.value : diary = $event.detail.value)
+      });
     };
   }
 };

@@ -17,16 +17,25 @@ const ShareDiary = () => "../../components/my/ShareDiary.js";
 const _sfc_main = {
   __name: "my",
   setup(__props) {
-    const url = common_vendor.inject("URL");
     const myStore = common_vendor.useStore();
+    const userInfo = myStore.state.userInfo;
     const items = ["\u6211\u5199\u7684\u65E5\u8BB0", "\u559C\u6B22\u7684\u65E5\u8BB0", "\u5206\u4EAB\u7684\u65E5\u8BB0"];
     let current = 0;
+    let imageSave = false;
+    let oldImage = myStore.state.userInfo.headPortrait;
+    let nickNameSave = false;
+    let oldNickName = myStore.state.userInfo.nickName;
     const popup = common_vendor.ref(null);
     myStore.state.userInfo.nickName;
+    common_vendor.watch(() => userInfo.nickName, (nv, ov) => {
+      console.log(nv);
+      nickNameSave = true;
+    });
     async function changeHeadPortrait() {
       const res = await common_vendor.index.chooseImage();
       if (res.errMsg === "chooseImage:ok") {
         myStore.commit("changeUserInfo", { headPortrait: res.tempFilePaths[0] });
+        imageSave = true;
         console.log(res.tempFilePaths[0]);
       }
     }
@@ -34,10 +43,67 @@ const _sfc_main = {
       popup.value.open("bottom");
     }
     function popupClose() {
+      myStore.commit("changeUserInfo", { nickName: oldNickName, headPortrait: oldImage });
       popup.value.close();
     }
-    common_vendor.onMounted(() => {
-    });
+    function exit() {
+      common_vendor.index.showModal({
+        title: "\u4F60\u786E\u5B9A\u8981\u9000\u51FA\u767B\u5F55\u5417\uFF1F",
+        success: (res) => {
+          if (res.confirm) {
+            common_vendor.index.removeStorageSync("userInfo");
+            myStore.commit("outLogin");
+          }
+        }
+      });
+    }
+    function editorSave() {
+      console.log(imageSave);
+      let addTime = Date.now();
+      let storage = null;
+      if (imageSave) {
+        common_vendor.index.uploadFile({
+          url: "",
+          filePath: userInfo.headPortrait,
+          fileType: "image",
+          name: userInfo.openId + String(addTime),
+          formData: { openId: userInfo.openId, addTime, identify: "image" },
+          success: (res) => {
+            imageSave = false;
+            if (res.statusCode === 200) {
+              storage = common_vendor.index.getStorageSync("userInfo");
+              storage.headPortrait = userInfo.headPortrait;
+              common_vendor.index.setStorageSync("userInfo", storage);
+            } else {
+              common_vendor.index.showModal({
+                title: "\u5934\u50CF\u4FDD\u5B58\u5931\u8D25"
+              });
+            }
+            console.log(res);
+          }
+        });
+      }
+      if (nickNameSave) {
+        common_vendor.index.request({
+          url: "",
+          method: "POST",
+          data: { openId: userInfo.openId, addTime, nickName: userInfo.nickName, identify: "nickName" },
+          success: (res) => {
+            nickNameSave = false;
+            if (res.statusCode === 200) {
+              storage = common_vendor.index.getStorageSync("userInfo");
+              storage.nickName = userInfo.nickName;
+              common_vendor.index.setStorageSync("userInfo", storage);
+            } else {
+              common_vendor.index.showModal({
+                title: "\u6635\u79F0\u4FDD\u5B58\u5931\u8D25"
+              });
+            }
+          }
+        });
+      }
+      popup.value.close();
+    }
     function login() {
       let headPortrait, nickname, addTime;
       common_vendor.index.getUserProfile({
@@ -49,11 +115,10 @@ const _sfc_main = {
           console.log(addTime, js_time.time(addTime));
           common_vendor.index.login({
             success: (res2) => {
-              let js_code = res2.code;
               common_vendor.index.request({
-                url,
+                url: "",
                 data: {
-                  js_code,
+                  js_code: res2.code,
                   headPortrait,
                   nickName: nickname,
                   addTime
@@ -68,12 +133,13 @@ const _sfc_main = {
                     return false;
                   } else {
                     console.log(res3);
-                    const userInfo = JSON.parse(res3.data);
+                    const userInfo2 = JSON.parse(res3.data);
                     console.log();
-                    myStore.commit("login", userInfo);
+                    myStore.commit("login", userInfo2);
                   }
                 },
-                fail: () => {
+                fail: (res3) => {
+                  console.log(res3);
                   common_vendor.index.showModal({
                     title: "\u53D1\u9001\u8BF7\u6C42\u5931\u8D25"
                   });
@@ -95,30 +161,34 @@ const _sfc_main = {
         e: _ctx.$store.state.userInfo.headPortrait,
         f: common_vendor.t(_ctx.$store.state.userInfo.praise),
         g: common_vendor.t(_ctx.$store.state.userInfo.flowers),
-        h: common_vendor.o(popupOpen),
-        i: _ctx.$store.state.userInfo.nickName,
-        j: common_vendor.o(($event) => _ctx.$store.state.userInfo.nickName = $event.detail.value),
-        k: _ctx.$store.state.userInfo.headPortrait,
-        l: common_vendor.o(changeHeadPortrait),
-        m: common_vendor.o(popupClose),
-        n: common_vendor.sr(popup, "0be17cc6-0", {
+        h: common_vendor.o(exit),
+        i: common_vendor.o(popupOpen),
+        j: _ctx.$store.state.userInfo.nickName,
+        k: common_vendor.o(($event) => _ctx.$store.state.userInfo.nickName = $event.detail.value),
+        l: _ctx.$store.state.userInfo.headPortrait,
+        m: common_vendor.o(changeHeadPortrait),
+        n: _ctx.$store.state.record.address,
+        o: common_vendor.o(($event) => _ctx.$store.state.record.address = $event.detail.value),
+        p: common_vendor.o(popupClose),
+        q: common_vendor.o(editorSave),
+        r: common_vendor.sr(popup, "0be17cc6-0", {
           "k": "popup"
         }),
-        o: common_vendor.p({
+        s: common_vendor.p({
           type: "bottom",
           ["is-mask-click"]: false
         }),
-        p: common_vendor.o(_ctx.onClickItem),
-        q: common_vendor.p({
+        t: common_vendor.o(_ctx.onClickItem),
+        v: common_vendor.p({
           current: common_vendor.unref(current),
           values: items,
           ["active-color"]: "#6da6be"
         }),
-        r: common_vendor.unref(current) === 0
+        w: common_vendor.unref(current) === 0
       }, common_vendor.unref(current) === 0 ? {} : {}, {
-        s: common_vendor.unref(current) === 1
+        x: common_vendor.unref(current) === 1
       }, common_vendor.unref(current) === 1 ? {} : {}, {
-        t: common_vendor.unref(current) === 2
+        y: common_vendor.unref(current) === 2
       }, common_vendor.unref(current) === 2 ? {} : {});
     };
   }

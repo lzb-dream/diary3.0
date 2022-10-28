@@ -1,8 +1,3 @@
-input.data-v-1ec23634 {
-  width: 80%;
-  height: 80rpx;
-  border: 1px solid gray;
-}
 .heard.data-v-1ec23634 {
   position: -webkit-sticky;
   position: sticky;
@@ -16,34 +11,84 @@ input.data-v-1ec23634 {
   text-align: center;
 }
 .heard .weather-mood.data-v-1ec23634 {
-  width: 100%;
+  width: 95%;
   display: flex;
-  justify-content: space-around;
-  align-items: center;
+  margin: 0 auto;
   margin-top: 40rpx;
 }
-.heard .weather-mood .weather.data-v-1ec23634,
-.heard .weather-mood .mood.data-v-1ec23634 {
-  width: 50%;
+.heard .weather-mood .boxweather.data-v-1ec23634,
+.heard .weather-mood .boxmood.data-v-1ec23634 {
   display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50%;
 }
-.heard .weather-mood .weather picker.data-v-1ec23634,
-.heard .weather-mood .mood picker.data-v-1ec23634 {
-  width: 20%;
+.heard .weather-mood .boxweather .tag.data-v-1ec23634,
+.heard .weather-mood .boxmood .tag.data-v-1ec23634 {
+  display: inline-block;
+  margin-left: 10rpx;
 }
-.heard .address.data-v-1ec23634 {
-  width: 100%;
+.heard .weather-mood .boxweather .weather.data-v-1ec23634,
+.heard .weather-mood .boxmood .weather.data-v-1ec23634,
+.heard .weather-mood .boxweather .mood.data-v-1ec23634,
+.heard .weather-mood .boxmood .mood.data-v-1ec23634 {
+  width: 65%;
+  display: flex;
+  align-items: center;
+  border: 1px solid gray;
+  border-radius: 20rpx;
+}
+.heard .weather-mood .boxweather .weather input.data-v-1ec23634,
+.heard .weather-mood .boxmood .weather input.data-v-1ec23634,
+.heard .weather-mood .boxweather .mood input.data-v-1ec23634,
+.heard .weather-mood .boxmood .mood input.data-v-1ec23634 {
+  width: 65%;
   height: 80rpx;
+  padding: 0 10rpx;
+  text-align: center;
+  font-size: small;
+}
+.heard .weather-mood .boxweather .weather picker.data-v-1ec23634,
+.heard .weather-mood .boxmood .weather picker.data-v-1ec23634,
+.heard .weather-mood .boxweather .mood picker.data-v-1ec23634,
+.heard .weather-mood .boxmood .mood picker.data-v-1ec23634 {
+  width: 10%;
+}
+.heard .boxaddress.data-v-1ec23634 {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 95%;
+  margin: 0 auto;
+  margin-bottom: 10rpx;
+}
+.heard .boxaddress .address.data-v-1ec23634 {
+  width: 85%;
+  height: 80rpx;
+  margin: 0 auto;
   margin-top: 20rpx;
   display: flex;
   justify-content: center;
+  border: 1px solid gray;
+  border-radius: 20rpx;
+}
+.heard .boxaddress .address input.data-v-1ec23634 {
+  width: 90%;
+  height: 100%;
+  font-size: small;
+  padding: 0 10rpx;
+  text-align: center;
+}
+.heard .boxaddress .address .choose_address.data-v-1ec23634 {
+  margin: auto 0;
+}
+.save.data-v-1ec23634 {
+  background-image: linear-gradient(to right, pink, yellow);
+  width: 100%;
 }
 textarea.data-v-1ec23634 {
   margin: 0 auto;
   width: 92%;
-  height: 550rpx;
-  line-height: 50rpx;
-  box-shadow: 0px 0px 36rpx 0px rgba(5, 5, 5, 0.15);
-  border-radius: 10rpx;
+  line-height: 45rpx;
   padding: 10rpx;
 }

@@ -14,14 +14,15 @@
 			<text>获赞：{{$store.state.userInfo.praise}}</text>
 			<text>小花：{{$store.state.userInfo.flowers}}</text>
 		</view>
+		<button class="exit" @click="exit">退出</button>
 		<button class="editor" @click="popupOpen">编辑</button>
 	</view>
 
 	<uni-popup ref="popup" type="bottom" :is-mask-click="false">
 		<view class="editorView">
 			<view class="editorView-item">
-				<text>昵称：</text>
-				<input type="text" v-model="$store.state.userInfo.nickName" focus >
+				<text>昵称:</text>
+				<input type="text" v-model="$store.state.userInfo.nickName" focus maxlength="10" placeholder="请输入你的昵称">
 			</view>
 			
 			<view class="editorView-item">
@@ -29,8 +30,12 @@
 				<image :src="$store.state.userInfo.headPortrait" mode="aspectFill" @click="changeHeadPortrait"></image>
 			</view>
 			<view class="editorView-item">
+				<text>地址:</text>
+				<input type="text" placeholder="请输入你的默认地址" v-model="$store.state.record.address">
+			</view>
+			<view class="editorView-item">
 				<button type="default" @click="popupClose">取消</button>
-				<button type="primary">保存</button>
+				<button type="primary" @click="editorSave">保存</button>
 			</view>
 		</view>
 	</uni-popup>
@@ -52,18 +57,26 @@
 	import MyDiary from '@/components/my/MyDiary.vue'
 	import LoveDiary from '@/components/my/LoveDiary.vue'
 	import ShareDiary from '@/components/my/ShareDiary.vue'
-	import { nextTick, onMounted,ref,inject } from "vue"
-	const url = inject('URL')
+	import { nextTick, onMounted,ref,inject, watch } from "vue"
 	const myStore = useStore()
+	const userInfo = myStore.state.userInfo
 	const items = ['我写的日记', '喜欢的日记', '分享的日记']
 	let current=0
+	let imageSave = false
+	let oldImage = myStore.state.userInfo.headPortrait
+	let nickNameSave= false
+	let oldNickName = myStore.state.userInfo.nickName
 	const popup = ref(null)
 	const editorNickName = myStore.state.userInfo.nickName
-	
+	watch(()=>userInfo.nickName,(nv,ov)=>{
+		console.log(nv);
+		nickNameSave = true
+	})
 	async function changeHeadPortrait(){
 		const res = await uni.chooseImage()
 		if(res.errMsg==="chooseImage:ok"){
 			myStore.commit('changeUserInfo',{headPortrait:res.tempFilePaths[0]})
+			imageSave = true
 			console.log(res.tempFilePaths[0]);
 		}
 	}
@@ -71,17 +84,70 @@
 		popup.value.open('bottom')
 	}
 	function popupClose(){
+		myStore.commit('changeUserInfo',{nickName:oldNickName,headPortrait:oldImage})
 		popup.value.close()
 	}
-	function editorSave(){
-		uni.uploadFile({
-			
+	function exit(){
+		uni.showModal({
+			title:'你确定要退出登录吗？',
+			success: res => {
+				if(res.confirm){
+					uni.removeStorageSync('userInfo')
+					myStore.commit('outLogin')
+				} 
+			}
 		})
-	}
-	onMounted(()=>{
 
-	})
-	
+	}
+	function editorSave(){
+		console.log(imageSave);
+		let addTime = Date.now()
+		let storage = null
+		if (imageSave){
+			uni.uploadFile({
+				url:'',
+				filePath:userInfo.headPortrait,
+				fileType: 'image',
+				name:userInfo.openId+String(addTime),
+				formData:{openId:userInfo.openId,addTime:addTime,identify:'image'},
+				success: res => {
+				imageSave = false
+				if (res.statusCode===200){
+					storage = uni.getStorageSync('userInfo')
+					storage.headPortrait = userInfo.headPortrait
+					uni.setStorageSync('userInfo',storage)
+				}else {
+					uni.showModal({
+						title:'头像保存失败'
+					})
+				}
+				console.log(res);
+				}
+				
+		})
+		} 
+		if (nickNameSave) {
+			uni.request({
+				url:'',
+				method:"POST",
+				data:{openId:userInfo.openId,addTime:addTime,nickName:userInfo.nickName,identify:'nickName'},
+				success: res => {
+					nickNameSave = false
+					if (res.statusCode===200){
+						storage = uni.getStorageSync('userInfo')
+						storage.nickName = userInfo.nickName
+						uni.setStorageSync('userInfo',storage)
+					}else {
+					uni.showModal({
+						title:'昵称保存失败'
+					})
+				}
+				}
+			})
+		}
+		popup.value.close()
+		
+	}
 	function login() {
 		let headPortrait,
 			nickname,
@@ -95,11 +161,10 @@
 				console.log(addTime, time(addTime));
 				uni.login({
 					success: res => {
-						let js_code = res.code
 						uni.request({
-							url: url,
+							url: '',
 							data: {
-								js_code: js_code,
+								js_code: res.code,
 								headPortrait: headPortrait,
 								nickName: nickname,
 								addTime: addTime
@@ -119,7 +184,8 @@
 									myStore.commit('login', userInfo)
 								}
 							},
-							fail: () => {
+							fail: res => {
+								console.log(res);
 								uni.showModal({
 									title: '发送请求失败'
 								})
@@ -149,7 +215,7 @@
 			left: 50%;
 			transform: translate(-50%,-50%);
 			background: transparent;
-			background-image: linear-gradient(to bottom right, rgba(220, 255, 189, 0.58), rgba(255, 240, 245, 0.73));
+			background-image: linear-gradient(to bottom right, rgba(247, 240, 172, 0.62), rgba(172, 247, 240, 0.77), rgba(240, 172, 247, 0.75));
 			//有特殊效果
 			// background-position: -50rpx;
 		}
@@ -166,7 +232,7 @@
 			width: 100%;
 			height: 100%;
 			background-size:100% 100%;
-			filter: blur(30rpx);
+			filter: blur(40rpx);
 			z-index: -1;
 		}
 		.headNickname {
@@ -190,9 +256,21 @@
 		}
 		.editor {
 			position: absolute;
-			right: 0;
-			top: 0;
+			right: 5rpx;
+			top: 5rpx;
 			font-size: xx-small;
+			background-color: transparent;
+		}
+		.exit {
+			position: absolute;
+			left: 5rpx;
+			top: 5rpx;
+			height: 50rpx;
+			margin: 0;
+			padding: 0 10rpx;
+			text-align: center;
+			font-size: small;
+			line-height: 50rpx;
 			background-color: transparent;
 		}
 	}

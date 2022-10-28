@@ -27,7 +27,8 @@ const store = createStore({
 			}
 		},
 		outLogin(state){
-			
+			state.hasLogin=false
+			state.userInfo={}
 		},
 	},
 	getters:{},

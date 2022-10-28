@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports[Symbol.toStringTag] = "Module";
 var common_vendor = require("./common/vendor.js");
+var js_interceptor = require("./js/interceptor.js");
 var store_index = require("./store/index.js");
 require("./store/record/index.js");
 if (!Math) {
@@ -11,6 +12,8 @@ if (!Math) {
 }
 const _sfc_main = {
   onLaunch: function() {
+    let URL = "http://127.0.0.1:8000/";
+    js_interceptor.request(URL);
     common_vendor.index.setTabBarBadge({
       index: 1,
       text: "1"
@@ -19,7 +22,10 @@ const _sfc_main = {
     let statusBarHeight = common_vendor.index.getSystemInfoSync().statusBarHeight;
     console.log(statusBarHeight);
     common_vendor.provide("statusBarHeight", statusBarHeight);
-    common_vendor.provide("URL", "http://127.0.0.1:8000/");
+    let address = common_vendor.index.getStorageSync("address");
+    if (address) {
+      this.$store.commit("record/changeState", { name: "address", value: address });
+    }
   },
   onShow: function() {
     console.log("App Show");

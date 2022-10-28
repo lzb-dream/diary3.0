@@ -1,1 +1,1 @@
-<weather-and-address class="data-v-3b6eb0a6" binddiaryFocus="{{a}}" u-i="3b6eb0a6-0" bind:__l="__l"></weather-and-address><button wx:if="{{b}}" class="save data-v-3b6eb0a6" ref="a">保存</button>
+<weather-and-address u-i="43c2929d-0" bind:__l="__l"></weather-and-address>
