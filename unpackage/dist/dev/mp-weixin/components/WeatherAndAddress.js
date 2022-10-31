@@ -38,6 +38,10 @@ const _sfc_main = {
       let test = value.trim();
       return test;
     }
+    common_vendor.onBeforeMount(() => {
+      myStore.commit("record/changeState", { name: "weather", value: weather.value });
+      myStore.commit("record/changeState", { name: "mood", value: mood.value });
+    });
     common_vendor.onMounted(() => {
       myStore.commit("record/changeState", { name: "addTime", value: Date.now() });
       console.log(myStore.state.record);
@@ -47,7 +51,44 @@ const _sfc_main = {
       myStore.commit("record/changeState", { name: "diary", value: diary2 });
       console.log(myStore.state.record.diary);
     });
-    function save() {
+    async function saveDiary(diaryData, writeTime) {
+      const diaryRes = await common_vendor.index.request({
+        url: "diary",
+        data: {
+          diary: diaryData.diary,
+          writeTime,
+          mood: diaryData.mood,
+          weather: diaryData.weather,
+          address: diaryData.address,
+          openId: myStore.state.userInfo.openId
+        },
+        method: "POST"
+      });
+      return diaryRes;
+    }
+    async function saveImage(imageUrl, diaryId, writeTime, logo, i) {
+      let name = i + myStore.state.userInfo.openId + "" + writeTime;
+      const imageRes = await common_vendor.index.uploadFile({
+        url: "imageManagement",
+        filePath: imageUrl,
+        fileType: "image",
+        name,
+        formData: { diaryId, name, openId: myStore.state.userInfo.openId, logo, writeTime }
+      });
+      return imageRes;
+    }
+    async function saveVideo(videoUrl, diaryId, writeTime, logo, i) {
+      let name = i + myStore.state.userInfo.openId + "" + writeTime;
+      const videoRes = await common_vendor.index.uploadFile({
+        url: "videoManagement",
+        filePath: videoUrl,
+        fileType: "video",
+        name,
+        formData: { diaryId, name, openId: myStore.state.userInfo.openId, logo, writeTime }
+      });
+      return videoRes;
+    }
+    async function save() {
       let ad = common_vendor.index.getStorageSync("address");
       if (ad !== myStore.state.record.address) {
         common_vendor.index.showModal({
@@ -59,7 +100,26 @@ const _sfc_main = {
           }
         });
       }
-      console.log(myStore.state.record);
+      const diaryData = myStore.state.record;
+      let writeTime = new Date(diaryData.addTime).getTime();
+      {
+        const diaryRes = await saveDiary(diaryData, writeTime);
+        console.log(diaryRes);
+        let diaryId = diaryRes.data.diaryId;
+        console.log(diaryId);
+        if (diaryData.imageList) {
+          for (var i = 0; i < diaryData.imageList.length; i++) {
+            const imageRes = await saveImage(diaryData.imageList[i], diaryId, writeTime, "create", i);
+            console.log(imageRes);
+          }
+        }
+        if (diaryData.videoList) {
+          for (var i = 0; i < diaryData.videoList.length; i++) {
+            const videoRes = await saveVideo(diaryData.videoList[i], diaryId, writeTime, "create", i);
+            console.log(videoRes);
+          }
+        }
+      }
     }
     return (_ctx, _cache) => {
       return common_vendor.e({

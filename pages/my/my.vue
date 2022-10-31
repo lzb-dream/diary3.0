@@ -171,6 +171,7 @@
 							},
 							method: 'GET',
 							dataType: JSON,
+							timeout:6000,
 							success: res => {
 								if (res.statusCode < 200 || res.statusCode > 226) {
 									uni.showModal({
@@ -180,6 +181,7 @@
 								} else {
 									console.log(res);
 									const userInfo = JSON.parse(res.data)
+									console.log(userInfo);
 									console.log();
 									myStore.commit('login', userInfo)
 								}

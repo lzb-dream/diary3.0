@@ -50,7 +50,7 @@
 
 <script setup>
 	import FilePicker from '@/components/FilePicker.vue'
-	import {ref,onMounted,inject,watch} from 'vue'
+	import {ref,onMounted,inject,watch,onBeforeMount} from 'vue'
 	import {useStore} from 'vuex'
 	const myStore = useStore()
 	let	statusBarHeight = inject('statusBarHeight') * 2 + 'rpx',
@@ -58,6 +58,7 @@
 		weather = ref(myStore.state.record.weatherList[0]),
 		mood = ref(myStore.state.record.moodList[0]),
 		index = ref(0)
+		
 		
 
 // 获取选择的心情与天气
@@ -83,6 +84,11 @@
 		let test = value.trim();
 		return test
 	}
+	onBeforeMount(()=>{
+		myStore.commit('record/changeState',{name:'weather',value:weather.value})
+		myStore.commit('record/changeState',{name:'mood',value:mood.value})
+	})
+	
 	onMounted(() => {
 		myStore.commit('record/changeState',{name:'addTime',value:Date.now()})
 		console.log(myStore.state.record);
@@ -92,12 +98,47 @@
 		myStore.commit('record/changeState',{name:'diary',value:diary})
 		console.log(myStore.state.record.diary);
 	})
-	// watch(address,(nv)=>{
-	// 	myStore.commit('record/address',nv)
-	// 	console.log(myStore.state.record.address);
-	// })
+	async function saveDiary(diaryData,writeTime){
+		const diaryRes = await uni.request({
+								url:'diary',
+								data:{
+									diary:diaryData.diary,
+									writeTime:writeTime,
+									mood:diaryData.mood,
+									weather:diaryData.weather,
+									address:diaryData.address,
+									openId:myStore.state.userInfo.openId
+								},
+								method:"POST"
+							})
+		return diaryRes
+	}
 	
-	function save(){
+	async function saveImage(imageUrl,diaryId,writeTime,logo,i){
+		let name = i+myStore.state.userInfo.openId+''+writeTime
+		const imageRes = await uni.uploadFile({
+			url:'imageManagement',
+			filePath:imageUrl,
+			fileType:'image',
+			name:name,
+			formData:{diaryId:diaryId, name:name, openId:myStore.state.userInfo.openId,logo:logo,writeTime:writeTime}
+		})
+		return imageRes
+	}
+	async function saveVideo(videoUrl,diaryId,writeTime,logo,i){
+		let name = i+myStore.state.userInfo.openId+''+writeTime
+		const videoRes = await uni.uploadFile({
+			url:'videoManagement',
+			filePath:videoUrl,
+			fileType:'video',
+			name:name,
+			formData:{diaryId:diaryId, name:name, openId:myStore.state.userInfo.openId,logo:logo,writeTime:writeTime}
+		})
+		return videoRes
+	}
+	
+	let saveSwitch = true
+	async function save(){
 		let ad = uni.getStorageSync('address')
 		if (ad!==myStore.state.record.address){
 			uni.showModal({
@@ -107,9 +148,31 @@
 						uni.setStorageSync('address',myStore.state.record.address)
 					}
 				}
-			})
+			}) 
 		}
-		console.log(myStore.state.record);
+		const diaryData = myStore.state.record
+		let writeTime = new Date(diaryData.addTime).getTime()
+		if (saveSwitch){
+			// saveSwitch = false
+			const diaryRes = await saveDiary(diaryData,writeTime)	
+			console.log(diaryRes);
+			let diaryId = diaryRes.data.diaryId
+			console.log(diaryId);
+			if (diaryData.imageList){
+				for (var i = 0; i < diaryData.imageList.length; i++) {
+				 	const imageRes =  await saveImage(diaryData.imageList[i],diaryId,writeTime,'create',i)
+					console.log(imageRes);
+				}
+			}
+			if (diaryData.videoList){
+				for (var i = 0; i < diaryData.videoList.length; i++) {
+					const videoRes =  await saveVideo(diaryData.videoList[i],diaryId,writeTime,'create',i)
+					console.log(videoRes);
+				}
+			}
+		}else{
+			console.log(saveSwitch);
+		}
 	}
 </script>
 

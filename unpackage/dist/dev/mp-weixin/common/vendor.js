@@ -6987,6 +6987,7 @@ exports.inject = inject;
 exports.isRef = isRef;
 exports.n = n;
 exports.o = o;
+exports.onBeforeMount = onBeforeMount;
 exports.onMounted = onMounted;
 exports.p = p;
 exports.provide = provide;

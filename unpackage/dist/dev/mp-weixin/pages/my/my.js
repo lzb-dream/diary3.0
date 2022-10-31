@@ -125,6 +125,7 @@ const _sfc_main = {
                 },
                 method: "GET",
                 dataType: JSON,
+                timeout: 6e3,
                 success: (res3) => {
                   if (res3.statusCode < 200 || res3.statusCode > 226) {
                     common_vendor.index.showModal({
@@ -134,6 +135,7 @@ const _sfc_main = {
                   } else {
                     console.log(res3);
                     const userInfo2 = JSON.parse(res3.data);
+                    console.log(userInfo2);
                     console.log();
                     myStore.commit("login", userInfo2);
                   }
