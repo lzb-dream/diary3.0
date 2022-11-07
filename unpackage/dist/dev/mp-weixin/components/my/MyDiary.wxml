@@ -1,0 +1,1 @@
+<view class="Box data-v-f9bef522"><view wx:for="{{a}}" wx:for-item="i" wx:key="d" class="item data-v-f9bef522" style="{{i.e}}" bindtap="{{i.f}}"><text class="data-v-f9bef522">{{i.a}}</text><view wx:if="{{i.b}}" class="data-v-f9bef522">{{i.c}}</view></view></view>

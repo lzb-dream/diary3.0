@@ -20,13 +20,27 @@ const _sfc_main = {
     const myStore = common_vendor.useStore();
     const userInfo = myStore.state.userInfo;
     const items = ["\u6211\u5199\u7684\u65E5\u8BB0", "\u559C\u6B22\u7684\u65E5\u8BB0", "\u5206\u4EAB\u7684\u65E5\u8BB0"];
-    let current = 0;
+    let current = common_vendor.ref(0);
     let imageSave = false;
     let oldImage = myStore.state.userInfo.headPortrait;
     let nickNameSave = false;
     let oldNickName = myStore.state.userInfo.nickName;
     const popup = common_vendor.ref(null);
-    myStore.state.userInfo.nickName;
+    let userId = myStore.state.userInfo.id;
+    if (myStore.state.hasLogin) {
+      myStore.dispatch("my/getDiary", userId);
+    }
+    common_vendor.watch(() => myStore.state.hasLogin, (nv) => {
+      if (nv === true) {
+        let userId2 = myStore.state.userInfo.id;
+        myStore.dispatch("my/getDiary", userId2);
+      }
+    });
+    function onClickItem(e) {
+      if (current.value !== e.currentIndex) {
+        current.value = e.currentIndex;
+      }
+    }
     common_vendor.watch(() => userInfo.nickName, (nv, ov) => {
       console.log(nv);
       nickNameSave = true;
@@ -52,6 +66,7 @@ const _sfc_main = {
         success: (res) => {
           if (res.confirm) {
             common_vendor.index.removeStorageSync("userInfo");
+            common_vendor.index.removeStorageSync("address");
             myStore.commit("outLogin");
           }
         }
@@ -136,7 +151,6 @@ const _sfc_main = {
                     console.log(res3);
                     const userInfo2 = JSON.parse(res3.data);
                     console.log(userInfo2);
-                    console.log();
                     myStore.commit("login", userInfo2);
                   }
                 },
@@ -180,7 +194,7 @@ const _sfc_main = {
           type: "bottom",
           ["is-mask-click"]: false
         }),
-        t: common_vendor.o(_ctx.onClickItem),
+        t: common_vendor.o(($event) => onClickItem($event)),
         v: common_vendor.p({
           current: common_vendor.unref(current),
           values: items,

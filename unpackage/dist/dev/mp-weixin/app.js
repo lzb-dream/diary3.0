@@ -5,10 +5,13 @@ var common_vendor = require("./common/vendor.js");
 var js_interceptor = require("./js/interceptor.js");
 var store_index = require("./store/index.js");
 require("./store/record/index.js");
+require("./store/my/index.js");
+require("./store/readDiary/index.js");
 if (!Math) {
   "./pages/record/record.js";
   "./pages/square/square.js";
   "./pages/my/my.js";
+  "./pages/readDiary/readDiary.js";
 }
 const _sfc_main = {
   onLaunch: function() {

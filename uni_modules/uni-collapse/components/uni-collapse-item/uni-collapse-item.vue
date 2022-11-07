@@ -264,7 +264,8 @@
 			flex-direction: row;
 			align-items: center;
 			transition: border-bottom-color .3s;
-
+			// 人工添加背景颜色
+			// background-color: red;
 			// transition-property: border-bottom-color;
 			// transition-duration: 5s;
 			&-wrap {

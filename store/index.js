@@ -1,5 +1,7 @@
 import {createStore} from 'vuex'
 import record from '@/store/record'
+import my from '@/store/my'
+import readDiary from '@/store/readDiary'
 const store = createStore({
 	state: {
 		hasLogin:false,
@@ -36,7 +38,9 @@ const store = createStore({
 
 	},
 	modules:{
-		record
+		record,
+		my,
+		readDiary
 	}
 })
 export default store

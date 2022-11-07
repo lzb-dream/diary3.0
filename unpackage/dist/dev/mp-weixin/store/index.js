@@ -1,6 +1,8 @@
 "use strict";
 var common_vendor = require("../common/vendor.js");
 var store_record_index = require("./record/index.js");
+var store_my_index = require("./my/index.js");
+var store_readDiary_index = require("./readDiary/index.js");
 const store = common_vendor.createStore({
   state: {
     hasLogin: false,
@@ -35,7 +37,9 @@ const store = common_vendor.createStore({
   getters: {},
   actions: {},
   modules: {
-    record: store_record_index.record
+    record: store_record_index.record,
+    my: store_my_index.my,
+    readDiary: store_readDiary_index.readDiary
   }
 });
 exports.store = store;

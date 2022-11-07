@@ -2,7 +2,8 @@
   "pages": [
     "pages/record/record",
     "pages/square/square",
-    "pages/my/my"
+    "pages/my/my",
+    "pages/readDiary/readDiary"
   ],
   "window": {
     "navigationBarTextStyle": "black",

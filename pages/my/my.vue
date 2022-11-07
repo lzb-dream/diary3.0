@@ -16,6 +16,7 @@
 		</view>
 		<button class="exit" @click="exit">退出</button>
 		<button class="editor" @click="popupOpen">编辑</button>
+		<button class="customerService" open-type="contact">客服</button>
 	</view>
 
 	<uni-popup ref="popup" type="bottom" :is-mask-click="false">
@@ -41,7 +42,7 @@
 	</uni-popup>
 	
 	<view class="list">
-		<uni-segmented-control :current="current" :values="items" active-color="#6da6be" @clickItem="onClickItem" />
+		<uni-segmented-control :current="current" :values="items" active-color="#6da6be" @clickItem="onClickItem($event)" />
 		<view class="content">
 			<view v-if="current === 0"><MyDiary></MyDiary></view>
 			<view v-if="current === 1"><LoveDiary></LoveDiary></view>
@@ -57,17 +58,31 @@
 	import MyDiary from '@/components/my/MyDiary.vue'
 	import LoveDiary from '@/components/my/LoveDiary.vue'
 	import ShareDiary from '@/components/my/ShareDiary.vue'
-	import { nextTick, onMounted,ref,inject, watch } from "vue"
+	import { nextTick, onMounted,ref,inject, watch, onBeforeUpdate } from "vue"
 	const myStore = useStore()
 	const userInfo = myStore.state.userInfo
 	const items = ['我写的日记', '喜欢的日记', '分享的日记']
-	let current=0
+	let current=ref(0)
 	let imageSave = false
 	let oldImage = myStore.state.userInfo.headPortrait
 	let nickNameSave= false
 	let oldNickName = myStore.state.userInfo.nickName
 	const popup = ref(null)
-	const editorNickName = myStore.state.userInfo.nickName
+	let userId = myStore.state.userInfo.id
+	if(myStore.state.hasLogin){
+		myStore.dispatch('my/getDiary',userId)
+	}
+	watch(()=>myStore.state.hasLogin,(nv)=>{
+		if (nv===true){
+			let userId = myStore.state.userInfo.id
+			myStore.dispatch('my/getDiary',userId)
+		}
+	})
+	function onClickItem(e){
+		if (current.value !== e.currentIndex) {
+			current.value = e.currentIndex
+		}
+	}
 	watch(()=>userInfo.nickName,(nv,ov)=>{
 		console.log(nv);
 		nickNameSave = true
@@ -93,6 +108,7 @@
 			success: res => {
 				if(res.confirm){
 					uni.removeStorageSync('userInfo')
+					uni.removeStorageSync('address')
 					myStore.commit('outLogin')
 				} 
 			}
@@ -182,7 +198,6 @@
 									console.log(res);
 									const userInfo = JSON.parse(res.data)
 									console.log(userInfo);
-									console.log();
 									myStore.commit('login', userInfo)
 								}
 							},
@@ -275,6 +290,19 @@
 			line-height: 50rpx;
 			background-color: transparent;
 		}
+		.customerService {
+			position: absolute;
+			right: 5rpx;
+			bottom: 5rpx;
+			height: 50rpx;
+			margin: 0;
+			padding: 0 10rpx;
+			text-align: center;
+			font-size: small;
+			line-height: 50rpx;
+			background-color: transparent;
+		}
+
 	}
 	
 	.editorView {

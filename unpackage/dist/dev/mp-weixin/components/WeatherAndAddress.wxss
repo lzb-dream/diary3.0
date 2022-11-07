@@ -90,5 +90,12 @@ textarea.data-v-1ec23634 {
   margin: 0 auto;
   width: 92%;
   line-height: 45rpx;
+  border-radius: 10rpx;
   padding: 10rpx;
+  height: 1000rpx;
+}
+
+
+page {
+		background-color: antiquewhite;
 }

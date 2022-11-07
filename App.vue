@@ -21,7 +21,6 @@ import {request} from "@/js/interceptor.js"
 			}
 		},
 		onShow: function() {
-			
 			console.log('App Show')
 		},
 		onHide: function() {

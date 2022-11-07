@@ -1,3 +1,10 @@
+
+.data-v-539bc876 .uni-collapse-item__title-box {
+  background-color: var(--539bc876-backgroundColor);
+}
+.data-v-539bc876 .uni-collapse-item__title {
+  background-color: var(--539bc876-backgroundColor);
+}
 button.data-v-539bc876 {
   width: 200rpx;
   height: auto;
@@ -9,6 +16,7 @@ button.data-v-539bc876 {
   flex-flow: row wrap;
   justify-content: center;
   align-items: center;
+  background-color: #ffffdb;
 }
 .Media .itemMedia.data-v-539bc876 {
   position: relative;

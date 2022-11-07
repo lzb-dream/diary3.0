@@ -23,7 +23,6 @@
 					</picker>
 				</view>
 			</view>
-
 		</view>
 		
 		<view class="boxaddress">
@@ -36,14 +35,14 @@
 			</view>
 		</view>
 		<view class="example-body">
-			<uni-datetime-picker type="datetime" v-model="$store.state.record.addTime" @change="changeLog" />
+			<uni-datetime-picker type="datetime" v-model="$store.state.record.addTime" />
 		</view>
-		<FilePicker></FilePicker>
+		<FilePicker title="如需上传图片视频请点击" :imageList="$store.state.record.imageList" :videoList="$store.state.record.videoList" :deleteInco="true" backgroundColor="#dcffbd" ></FilePicker>
 		<button class="save" v-if="$store.state.record.diary" @click="save">保存</button>
 	</view>
 	
 	<textarea name="" id="" placeholder="写已写今天都发生了什么吧₍˄·͈༝·͈˄*₎◞ " maxlength="-1"
-	v-model="diary" auto-height="true"></textarea>
+	v-model="$store.state.record.diary" @focus="focus"></textarea>
 
 
 </template>
@@ -54,13 +53,25 @@
 	import {useStore} from 'vuex'
 	const myStore = useStore()
 	let	statusBarHeight = inject('statusBarHeight') * 2 + 'rpx',
-		diary = ref(null),
 		weather = ref(myStore.state.record.weatherList[0]),
 		mood = ref(myStore.state.record.moodList[0]),
 		index = ref(0)
-		
-		
-
+	
+	function focus(){
+		if (!myStore.state.hasLogin){
+			uni.showModal({
+				title:'请登录后使用',
+				success: res => {
+					if(res.confirm){
+						uni.switchTab({
+							url:'/pages/my/my'
+						})
+					}
+				}
+			})
+		}
+	}
+	
 // 获取选择的心情与天气
 	function getWeather_Mood(e,type) {
 		if (type==="weather"){
@@ -78,12 +89,7 @@
 		console.log(ad);
 		myStore.commit('record/changeState',{name:'address',value:ad.name})
 	}
-//对日记进行校验 
-	function diaryDispose(value) {
-		// trim不会改变原本字符串会生成一个新的字符串，用于去除字符串前后空格
-		let test = value.trim();
-		return test
-	}
+	
 	onBeforeMount(()=>{
 		myStore.commit('record/changeState',{name:'weather',value:weather.value})
 		myStore.commit('record/changeState',{name:'mood',value:mood.value})
@@ -91,18 +97,12 @@
 	
 	onMounted(() => {
 		myStore.commit('record/changeState',{name:'addTime',value:Date.now()})
-		console.log(myStore.state.record);
-	})
-	watch(diary,(nv)=>{
-		let diary = diaryDispose(nv)
-		myStore.commit('record/changeState',{name:'diary',value:diary})
-		console.log(myStore.state.record.diary);
 	})
 	async function saveDiary(diaryData,writeTime){
 		const diaryRes = await uni.request({
 								url:'diary',
 								data:{
-									diary:diaryData.diary,
+									diary:myStore.getters['record/diaryDispose'],
 									writeTime:writeTime,
 									mood:diaryData.mood,
 									weather:diaryData.weather,
@@ -114,25 +114,38 @@
 		return diaryRes
 	}
 	
-	async function saveImage(imageUrl,diaryId,writeTime,logo,i){
+	async function saveImage(imageUrl,diaryId,writeTime,i){
 		let name = i+myStore.state.userInfo.openId+''+writeTime
 		const imageRes = await uni.uploadFile({
 			url:'imageManagement',
 			filePath:imageUrl,
 			fileType:'image',
 			name:name,
-			formData:{diaryId:diaryId, name:name, openId:myStore.state.userInfo.openId,logo:logo,writeTime:writeTime}
+			formData:{diaryId:diaryId, name:name, openId:myStore.state.userInfo.openId,writeTime:writeTime}
 		})
 		return imageRes
 	}
-	async function saveVideo(videoUrl,diaryId,writeTime,logo,i){
+	
+	async function saveVideo(videoUrl,diaryId,writeTime,i){
 		let name = i+myStore.state.userInfo.openId+''+writeTime
 		const videoRes = await uni.uploadFile({
 			url:'videoManagement',
 			filePath:videoUrl,
 			fileType:'video',
 			name:name,
-			formData:{diaryId:diaryId, name:name, openId:myStore.state.userInfo.openId,logo:logo,writeTime:writeTime}
+			formData:{diaryId:diaryId, name:name, openId:myStore.state.userInfo.openId,writeTime:writeTime}
+		})
+		return videoRes
+	}
+	
+	async function saveVideoPhoto(videoPhotoUrl,diaryId,writeTime,i){
+		let name = i+myStore.state.userInfo.openId+''+writeTime
+		const videoRes = await uni.uploadFile({
+			url:'videoPhotoManagement',
+			filePath:videoPhotoUrl,
+			fileType:'image',
+			name:name,
+			formData:{diaryId:diaryId, name:name, openId:myStore.state.userInfo.openId,writeTime:writeTime}
 		})
 		return videoRes
 	}
@@ -151,25 +164,77 @@
 			}) 
 		}
 		const diaryData = myStore.state.record
+		if (!myStore.getters['record/diaryDispose']){
+			uni.showToast({
+				title:'日记为空',
+				icon:'error'
+			})
+			return false
+		}
 		let writeTime = new Date(diaryData.addTime).getTime()
 		if (saveSwitch){
-			// saveSwitch = false
-			const diaryRes = await saveDiary(diaryData,writeTime)	
+			saveSwitch = false
+			setTimeout(()=>{
+				saveSwitch = true
+			},6000)
+			const diaryRes = await saveDiary(diaryData,writeTime)
+			if (diaryRes.statusCode===500){
+				uni.showToast({
+					title:'日记保存失败',
+					icon:'error',
+				})
+			}
 			console.log(diaryRes);
 			let diaryId = diaryRes.data.diaryId
 			console.log(diaryId);
 			if (diaryData.imageList){
 				for (var i = 0; i < diaryData.imageList.length; i++) {
 				 	const imageRes =  await saveImage(diaryData.imageList[i],diaryId,writeTime,'create',i)
+					if (imageRes.statusCode === 500){
+						uni.showToast({
+							title:'图片保存失败',
+							icon:'error'
+						})
+						return false
+					} 
 					console.log(imageRes);
 				}
 			}
 			if (diaryData.videoList){
 				for (var i = 0; i < diaryData.videoList.length; i++) {
-					const videoRes =  await saveVideo(diaryData.videoList[i],diaryId,writeTime,'create',i)
+					const videoRes =  await saveVideo(diaryData.videoList[i],diaryId,writeTime,i)
+					if (videoRes.statusCode===500){
+						uni.showToast({
+							title:'视频保存失败',
+							icon:'error'
+						})
+						return false
+					}
 					console.log(videoRes);
 				}
+				for (var i = 0; i < diaryData.videoPhoto.length; i++) {
+					const videoPhotoRes =  await saveVideoPhoto(diaryData.videoPhoto[i],diaryId,writeTime,i)
+					if (videoPhotoRes.statusCode===500){
+						uni.showToast({
+							title:'视频封面保存失败',
+							icon:'error'
+						})
+						return false
+					}
+					console.log(videoPhotoRes);
+				}
+				
 			}
+			
+			uni.showToast({
+				title:'日记保存成功',
+				icon:'success'
+			})
+			let userId = myStore.state.userInfo.id
+			myStore.dispatch('my/getDiary',userId)
+			myStore.commit('record/changeState',{name:'diary',value:''})
+			myStore.commit('record/emptyList','imageList')
+			myStore.commit('record/emptyList','videoList')
 		}else{
 			console.log(saveSwitch);
 		}
@@ -262,7 +327,15 @@
 		width: 92%;
 		line-height: 45rpx;
 		// line-height: 50rpx;
-		// border-radius: 10rpx;
+		border-radius: 10rpx;
 		padding: 10rpx;
+		height: 1000rpx;
+
+	}
+</style>
+
+<style>
+	page {
+		background-color: antiquewhite;
 	}
 </style>

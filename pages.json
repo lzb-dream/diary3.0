@@ -18,6 +18,12 @@
 			"style": {
 				"navigationBarTitleText": "uni-app"
 			}
+		},
+		{
+			"path": "pages/readDiary/readDiary",
+			"style": {
+				"navigationBarTitleText": "这里是我的回忆"
+			}
 		}
 
 	],
