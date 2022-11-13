@@ -2,12 +2,12 @@
 	<uni-collapse>
 		<uni-collapse-item :title="title" thumb="http://127.0.0.1:8000/static/inco/picture.png">
 			<view class="Media">
-				<view class="itemMedia" v-for="(i,index) in imageList" :key="i">
+				<view class="itemMedia" v-for="(i,index) in operationType==='save'?$store.state.record.imageList:$store.state.readDiary.image" :key="i">
 					<image :src="i" alt="" @click="previewImage(i)" mode="aspectFill"></image>
-					<text class="incorrect" @click.stop="$store.commit('record/popList',{name:'imageList', index:index})" v-if="deleteInco"></text>
+					<text class="incorrect" @click.stop="deleteImage(index)" v-if="deleteInco"></text>
 				</view>
 		
-				<view class="itemMedia" v-for="(i,index) in videoList" :key="i" @click.stop="previewVideo(i)">
+				<view class="itemMedia" v-for="(i,index) in operationType==='save'?$store.state.record.videoList:$store.state.readDiary.video" :key="i" @click.stop="previewVideo(i)">
 					<video :src="i" controls  :show-fullscreen-btn="false" :show-center-play-btn="false" :controls="false"></video>
 					<text class="incorrect" @click.stop="deleteVideo(index)" v-if="deleteInco"></text>
 					<view class="play">
@@ -38,10 +38,9 @@ export default {
 	},
 	props:{
 		title:String,
-		imageList:Array,
-		videoList:Array,
 		deleteInco:Boolean,
-		backgroundColor:String
+		backgroundColor:String,
+		operationType:String
 	},
 	onReady: function () {
 	    this.videoContext = uni.createVideoContext("myvideo", this);    // this这个是实例对象  必传
@@ -57,7 +56,7 @@ export default {
 			}
 			let res = await uni.chooseMedia()
 			console.log(res);
-			
+			console.log(this.$store.state.readDiary);
 			if (res.errMsg === "chooseMedia:ok") {
 				for (var i = 0; i < res.tempFiles.length; i++) {
 					if (res.type === "video") {
@@ -67,22 +66,43 @@ export default {
 							})
 							return false
 						} 
-						this.myStore.commit('record/pushList',{name:'videoList',value:res.tempFiles[i].tempFilePath})
-						this.myStore.commit('record/pushList',{name:'videoPhoto',value:res.tempFiles[i].thumbTempFilePath})
-						console.log(this.$store.state.record.videoPhoto);
-						
+						if (this.operationType==='save'){
+							this.myStore.commit('record/pushList',{name:'videoList',value:res.tempFiles[i].tempFilePath})
+							this.myStore.commit('record/pushList',{name:'videoPhoto',value:res.tempFiles[i].thumbTempFilePath})
+						}else if(this.operationType==='editor'){
+							this.myStore.commit('readDiary/pushList',{name:'video',value:res.tempFiles[i].tempFilePath})
+							this.myStore.commit('readDiary/pushList',{name:'videoPhoto',value:res.tempFiles[i].thumbTempFilePath})
+							this.myStore.commit('readDiary/pushList',{name:'newVideo',value:res.tempFiles[i].tempFilePath})
+							this.myStore.commit('readDiary/pushList',{name:'newVideoPhoto',value:res.tempFiles[i].thumbTempFilePath})
+						}
 					} else if (res.type === "image") {
-						this.myStore.commit('record/pushList',{name:'imageList',value:res.tempFiles[i].tempFilePath})
+						if (this.operationType==='save'){
+							this.myStore.commit('record/pushList',{name:'imageList',value:res.tempFiles[i].tempFilePath})
+						}else if(this.operationType==='editor'){
+							this.myStore.commit('readDiary/pushList',{name:'image',value:res.tempFiles[i].tempFilePath})
+							this.myStore.commit('readDiary/pushList',{name:'newImage',value:res.tempFiles[i].tempFilePath})
+						}
+						
 					}
 				}
 			}
 		},
 		deleteVideo: function (index){
-			this.$store.commit('record/popList',{name:'videoList', index:index})
-			this.$store.commit('record/popList',{name:'videoPhoto', index:index})
-			console.log(this.$store.state.record.videoPhoto);
+			if (this.operationType==='save'){
+				this.$store.commit('record/popList',{name:'videoList', index:index})
+				this.$store.commit('record/popList',{name:'videoPhoto', index:index})
+			}else if(this.operationType==='editor'){
+				this.$store.commit('readDiary/popList',{name:'video', index:index})
+				this.$store.commit('readDiary/popList',{name:'videoPhoto', index:index})
+			}
 		},
-		
+		deleteImage: function(index){
+			if (this.operationType==='save'){
+				this.$store.commit('record/popList',{name:'imageList', index:index})
+			}else if(this.operationType==='editor'){
+				this.$store.commit('readDiary/popList',{name:'image', index:index})
+			}
+		},
 		previewVideo: function (videoUrl) {
 			this.videoUrl =videoUrl;
 			this.videoContext.requestFullScreen();  //direction: 90  这个是控制全屏的时候视屏旋转多少度 
@@ -115,8 +135,9 @@ export default {
 </script>
 
 <script setup>
-const props = defineProps(['backgroundColor'])
+const props = defineProps(['backgroundColor','operationType'])
 let backgroundColor = props.backgroundColor
+let operationType = props.operationType
 </script>
 <style lang="less" scoped>
 /deep/ .uni-collapse-item__title-box {

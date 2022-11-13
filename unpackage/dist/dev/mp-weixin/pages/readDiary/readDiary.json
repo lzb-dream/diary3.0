@@ -1,6 +1,9 @@
 {
   "navigationBarTitleText": "这里是我的回忆",
+  "navigationStyle": "custom",
   "usingComponents": {
+    "uni-nav-bar": "../../uni_modules/uni-nav-bar/components/uni-nav-bar/uni-nav-bar",
+    "weather-and-address": "../../components/WeatherAndAddress",
     "file-picker": "../../components/FilePicker"
   }
 }

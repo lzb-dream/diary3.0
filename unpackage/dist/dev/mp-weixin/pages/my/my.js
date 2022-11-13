@@ -78,7 +78,7 @@ const _sfc_main = {
       let storage = null;
       if (imageSave) {
         common_vendor.index.uploadFile({
-          url: "",
+          url: "userManagement",
           filePath: userInfo.headPortrait,
           fileType: "image",
           name: userInfo.openId + String(addTime),
@@ -100,7 +100,7 @@ const _sfc_main = {
       }
       if (nickNameSave) {
         common_vendor.index.request({
-          url: "",
+          url: "userManagement",
           method: "POST",
           data: { openId: userInfo.openId, addTime, nickName: userInfo.nickName, identify: "nickName" },
           success: (res) => {
@@ -131,7 +131,7 @@ const _sfc_main = {
           common_vendor.index.login({
             success: (res2) => {
               common_vendor.index.request({
-                url: "",
+                url: "userManagement",
                 data: {
                   js_code: res2.code,
                   headPortrait,

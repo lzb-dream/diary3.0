@@ -9,7 +9,7 @@
             "list": [
                 {
                     "name": "",
-                    "pathName": "pages/record/record",
+                    "pathName": "pages/my/my",
                     "query": "",
                     "launchMode": "default",
                     "scene": null

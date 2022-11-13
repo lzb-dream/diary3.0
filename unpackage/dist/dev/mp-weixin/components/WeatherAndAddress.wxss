@@ -9,12 +9,12 @@
 }
 .heard .rtitle.data-v-1ec23634 {
   text-align: center;
+  margin-bottom: 40rpx;
 }
 .heard .weather-mood.data-v-1ec23634 {
   width: 95%;
   display: flex;
   margin: 0 auto;
-  margin-top: 40rpx;
 }
 .heard .weather-mood .boxweather.data-v-1ec23634,
 .heard .weather-mood .boxmood.data-v-1ec23634 {
@@ -97,5 +97,5 @@ textarea.data-v-1ec23634 {
 
 
 page {
-		background-color: antiquewhite;
+		background-color: #fae0b2;
 }

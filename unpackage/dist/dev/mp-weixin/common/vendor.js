@@ -6991,6 +6991,7 @@ exports.onBeforeMount = onBeforeMount;
 exports.onMounted = onMounted;
 exports.p = p;
 exports.provide = provide;
+exports.reactive = reactive;
 exports.ref = ref;
 exports.resolveComponent = resolveComponent;
 exports.s = s;

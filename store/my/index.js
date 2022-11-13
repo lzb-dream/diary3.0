@@ -13,8 +13,8 @@ export default {
 	},
 	actions: {
 		// 用户id
-		async getDiary(context,userId){
-			console.log(userId);
+		async getDiary(context){
+			let userId = uni.getStorageSync('userInfo').id
 			const diaryRes = await uni.request({
 				url:'diary',
 				data:{userId:userId},
@@ -40,8 +40,10 @@ export default {
 						item.image[index]='http://127.0.0.1:8000/'+items
 					})
 				}
+				item.image = item.image===''?[]:item.image
+				item.video = item.video===''?[]:item.video
+				item.videoPhoto = item.videoPhoto===''?[]:item.videoPhoto
 			})
-			console.log(diarys);
 			context.commit('changeState',{name:'diarys',value:diarys})
 		}
 	},

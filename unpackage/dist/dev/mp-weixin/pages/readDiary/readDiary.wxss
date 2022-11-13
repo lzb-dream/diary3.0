@@ -1,6 +1,7 @@
 .Box.data-v-13668ba2 {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 .Box .textTime.data-v-13668ba2 {
   display: inline-block;
@@ -18,14 +19,29 @@
   margin: 0 auto;
   margin-top: 16rpx;
 }
-.Box .textDiary.data-v-13668ba2 {
+.Box .textEditorDiary.data-v-13668ba2 {
   display: inline-block;
   padding: 17rpx;
   line-height: 60rpx;
+  margin: 0 auto;
+  width: 95%;
+  height: 800rpx;
+}
+.Box .textDiary.data-v-13668ba2 {
+  padding: 17rpx;
+  line-height: 60rpx;
+}
+.Box .editor.data-v-13668ba2 {
+  background-color: transparent;
+  position: absolute;
+  bottom: 0;
+  right: 50%;
+  transform: translateX(50%);
+  color: #757575;
 }
 
 
 	/* 单页面的颜色设置 */
 page {
-		background-color: #FFE4B5;
+		background-color: #fae0b2;
 }

@@ -8,7 +8,11 @@ const _sfc_main = {
   __name: "record",
   setup(__props) {
     return (_ctx, _cache) => {
-      return {};
+      return {
+        a: common_vendor.p({
+          operationType: "save"
+        })
+      };
     };
   }
 };

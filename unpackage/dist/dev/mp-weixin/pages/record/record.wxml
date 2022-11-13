@@ -1,1 +1,1 @@
-<weather-and-address u-i="43c2929d-0" bind:__l="__l"></weather-and-address>
+<weather-and-address wx:if="{{a}}" u-i="43c2929d-0" bind:__l="__l" u-p="{{a}}"></weather-and-address>

@@ -5,9 +5,9 @@ const _sfc_main = {
   setup(__props) {
     const myStore = common_vendor.useStore();
     function styleVideoPhoto(i) {
-      if (i.image) {
+      if (i.image.length > 0) {
         return `background-image:url(${i.image[0]})`;
-      } else if (i.videoPhoto) {
+      } else if (i.videoPhoto.length > 0) {
         return `background-image:url(${i.videoPhoto[0]})`;
       } else {
         return `background:	#FFDEAD`;
@@ -22,9 +22,9 @@ const _sfc_main = {
       }
     }
     function diaryJudeg(i) {
-      if (i.image) {
+      if (i.image > 0) {
         return false;
-      } else if (i.videoPhoto) {
+      } else if (i.videoPhoto > 0) {
         return false;
       } else {
         return true;
@@ -34,11 +34,12 @@ const _sfc_main = {
       myStore.commit("readDiary/changeState", { name: "weather", value: i.weather });
       myStore.commit("readDiary/changeState", { name: "mood", value: i.mood });
       myStore.commit("readDiary/changeState", { name: "writeTime", value: i.writeTime });
+      myStore.commit("readDiary/changeState", { name: "diary", value: i.diary });
+      myStore.commit("readDiary/changeState", { name: "address", value: i.address });
+      myStore.commit("readDiary/changeState", { name: "id", value: i.id });
       myStore.commit("readDiary/changeState", { name: "image", value: i.image });
       myStore.commit("readDiary/changeState", { name: "video", value: i.video });
       myStore.commit("readDiary/changeState", { name: "videoPhoto", value: i.videoPhoto });
-      myStore.commit("readDiary/changeState", { name: "diary", value: i.diary });
-      myStore.commit("readDiary/changeState", { name: "address", value: i.address });
       common_vendor.index.navigateTo({
         url: "/pages/readDiary/readDiary",
         success: () => {

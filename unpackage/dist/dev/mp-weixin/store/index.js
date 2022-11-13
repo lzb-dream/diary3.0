@@ -6,7 +6,8 @@ var store_readDiary_index = require("./readDiary/index.js");
 const store = common_vendor.createStore({
   state: {
     hasLogin: false,
-    userInfo: {}
+    userInfo: {},
+    URL: "http://127.0.0.1:8000/"
   },
   mutations: {
     changeUserInfo(state, object) {

@@ -5,7 +5,8 @@ import readDiary from '@/store/readDiary'
 const store = createStore({
 	state: {
 		hasLogin:false,
-		userInfo:{}
+		userInfo:{},
+		URL : "http://127.0.0.1:8000/"
 	},
 	mutations: {
 		changeUserInfo(state,object){

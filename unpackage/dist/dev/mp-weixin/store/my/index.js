@@ -12,8 +12,8 @@ var my = {
     }
   },
   actions: {
-    async getDiary(context, userId) {
-      console.log(userId);
+    async getDiary(context) {
+      let userId = common_vendor.index.getStorageSync("userInfo").id;
       const diaryRes = await common_vendor.index.request({
         url: "diary",
         data: { userId },
@@ -39,8 +39,10 @@ var my = {
             item.image[index] = "http://127.0.0.1:8000/" + items;
           });
         }
+        item.image = item.image === "" ? [] : item.image;
+        item.video = item.video === "" ? [] : item.video;
+        item.videoPhoto = item.videoPhoto === "" ? [] : item.videoPhoto;
       });
-      console.log(diarys);
       context.commit("changeState", { name: "diarys", value: diarys });
     }
   }

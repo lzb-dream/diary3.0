@@ -1,6 +1,6 @@
 <template>
 	<view class="heard">
-		<view class="rtitle">
+		<view class="rtitle" v-if="operationType=='save'">
 			<text>记录点点滴滴</text>
 		</view>
 		<view class="weather-mood">
@@ -28,35 +28,113 @@
 		<view class="boxaddress">
 			<text>地址：</text>
 			<view class="address">
-				<input type="text" v-model="$store.state.record.address" placeholder="">
+				<input type="text" v-model="address" placeholder="请输入地址">
 				<view class="choose_address">
 					<uni-icons type="location-filled" size="30" @click="getAddress" color="#cc86d1"></uni-icons>
 				</view>
 			</view>
 		</view>
-		<view class="example-body">
-			<uni-datetime-picker type="datetime" v-model="$store.state.record.addTime" />
+		<view class="example-body" v-if="operationType!=='editor'">
+			<uni-datetime-picker type="datetime" v-model="$store.state.record.addTime"/>
 		</view>
-		<FilePicker title="如需上传图片视频请点击" :imageList="$store.state.record.imageList" :videoList="$store.state.record.videoList" :deleteInco="true" backgroundColor="#dcffbd" ></FilePicker>
-		<button class="save" v-if="$store.state.record.diary" @click="save">保存</button>
+		<FilePicker title="如需上传图片视频请点击" :deleteInco="true"  :operationType="operationType" backgroundColor="#dcffbd" ></FilePicker>
+		<button class="save" v-if="$store.state.record.diary&&operationType==='save'" @click="save">保存</button>
+		<button class="save" v-if="$store.state.readDiary.diary&&operationType==='editor'" @click="update">更改</button>
 	</view>
 	
-	<textarea name="" id="" placeholder="写已写今天都发生了什么吧₍˄·͈༝·͈˄*₎◞ " maxlength="-1"
-	v-model="$store.state.record.diary" @focus="focus"></textarea>
+	<textarea name="" placeholder="写已写今天都发生了什么吧₍˄·͈༝·͈˄*₎◞ " maxlength="-1"
+	v-model="diary" @focus="focus"></textarea>
 
 
 </template>
 
 <script setup>
 	import FilePicker from '@/components/FilePicker.vue'
-	import {ref,onMounted,inject,watch,onBeforeMount} from 'vue'
+	import {ref,onMounted,inject,watch,onBeforeMount,reactive} from 'vue'
 	import {useStore} from 'vuex'
+	import {copy} from '@/js/way.js'
+	const props = defineProps(['operationType'])
 	const myStore = useStore()
+
 	let	statusBarHeight = inject('statusBarHeight') * 2 + 'rpx',
 		weather = ref(myStore.state.record.weatherList[0]),
 		mood = ref(myStore.state.record.moodList[0]),
-		index = ref(0)
+		address = ref(myStore.state.record.address),
+		diary = ref(myStore.state.record.diary),
+		imageList = reactive(myStore.state.record.imageList),
+		videoList = reactive(myStore.state.record.videoList),
+		operationType = props.operationType,
+		
+		oldImage = null,
+		oldVideo = null,
+		oldVideoPhoto = null,
+		newImage = myStore.state.readDiary.newImage,
+		newVideo = myStore.state.readDiary.newVideo,
+		newVideoPhoto = myStore.state.readDiary.newVideoPhoto,
+		index = ref(0);	
 	
+	onBeforeMount(()=>{
+		// 编辑模式下的默认值
+		if(operationType==='editor'){
+			statusBarHeight=0
+			weather.value = myStore.state.readDiary.weather
+			mood.value = myStore.state.readDiary.mood
+			address.value = myStore.state.readDiary.address
+			diary.value = myStore.state.readDiary.diary
+			imageList = reactive(myStore.state.readDiary.image)
+			videoList = reactive(myStore.state.readDiary.video)
+			
+			oldImage = copy(myStore.state.readDiary.image)
+			oldVideo = copy(myStore.state.readDiary.video)
+			oldVideoPhoto = copy(myStore.state.readDiary.videoPhoto)
+		}else if(operationType==='save'){
+			// 天气心情默认值
+			myStore.commit('record/changeState',{name:'weather',value:weather.value})
+			myStore.commit('record/changeState',{name:'mood',value:mood.value})
+		}
+	})
+	onMounted(() => {
+		myStore.commit('record/changeState',{name:'addTime',value:Date.now()})
+	})
+	//监听天气
+	watch(weather,(nv)=>{
+		if(operationType==='editor'){
+			console.log(12345643213245465);
+			myStore.commit('readDiary/changeState',{name:'weather',value:nv})
+			myStore.commit('readDiary/updateData',{name:'weather',value:nv})
+			console.log(123456789);
+		}else if(operationType==='save'){
+			myStore.commit('record/changeState',{name:'weather',value:nv})
+		}
+	})
+	// 监听心情
+	watch(mood,(nv)=>{
+		if(operationType==='editor'){
+			myStore.commit('readDiary/changeState',{name:'mood',value:nv})
+			myStore.commit('readDiary/changeState',{name:'mood',value:nv})
+			myStore.commit('readDiary/updateData',{name:'mood',value:nv})
+		}else if(operationType==='save'){
+			myStore.commit('record/changeState',{name:'mood',value:nv})
+		}
+	})
+	// 监听地址
+	watch(address,(nv)=>{
+		if(operationType==='editor'){
+			myStore.commit('readDiary/changeState',{name:'address',value:nv})
+			myStore.commit('readDiary/updateData',{name:'address',value:nv})
+		}else if(operationType==='save'){
+			myStore.commit('record/changeState',{name:'address',value:nv})
+		}
+	})
+	// 监听日记
+	watch(diary,(nv)=>{
+		if(operationType==='editor'){
+			myStore.commit('readDiary/changeState',{name:'diary',value:nv})
+			myStore.commit('readDiary/updateData',{name:'diary',value:nv})
+		}else if(operationType==='save'){
+			myStore.commit('record/changeState',{name:'diary',value:nv})
+		}
+	})
 	function focus(){
 		if (!myStore.state.hasLogin){
 			uni.showModal({
@@ -72,32 +150,82 @@
 		}
 	}
 	
+	function update(){
+		console.log(myStore.state.readDiary.updateData);
+		console.log(newImage);
+		console.log(newVideo);
+		console.log(newVideoPhoto);
+		
+		console.log(oldImage);
+		console.log(oldVideo);
+		console.log(oldVideoPhoto);
+		let updateTime = new Date().getTime()
+		console.log(updateTime);
+		if(myStore.state.readDiary.updateData!=={}){
+			uni.request({
+				url:'diary',
+				method:'PUT',
+				data:{id:myStore.state.readDiary.id,data:myStore.state.readDiary.updateData,updateTime:updateTime},
+				success: res => {
+					console.log(res);
+				}
+			})
+		}
+
+		if(newImage.length>0){
+			for (var i = 0; i < newImage.length; i++) {
+				let name = i+myStore.state.userInfo.openId+''+updateTime
+				let image = JSON.stringify(myStore.state.readDiary.image) 
+				uni.uploadFile({
+					url:'updateImage',
+					fileType:'image',
+					filePath:newImage[i],
+					formData:{newImage:JSON.stringify(newImage),ImageList:image,updateTime:updateTime,id:myStore.state.readDiary.id,name:name},
+					name:name
+				})
+			}
+		}
+		if(newVideo.length>0){
+			for (var i = 0; i < newVideo.length; i++) {
+				let name = i+myStore.state.userInfo.openId+''+updateTime
+				let videoList = JSON.stringify(myStore.state.readDiary.video) 
+				uni.uploadFile({
+					url:'updateVideo',
+					fileType:'video',
+					filePath:newVideo[i],
+					formData:{newVideo:JSON.stringify(newVideo),videoList:videoList,updateTime:updateTime,id:myStore.state.readDiary.id,name:name},
+					name:name
+				})
+			}
+			for (var i = 0; i < newVideoPhoto.length; i++) {
+				let name = i+myStore.state.userInfo.openId+''+updateTime
+				let videoPhotoList = JSON.stringify(myStore.state.readDiary.videoPhoto) 
+				uni.uploadFile({
+					url:'updateVideo',
+					fileType:'image',
+					filePath:newVideoPhoto[i],
+					formData:{newVideoPhoto:JSON.stringify(newVideoPhoto),videoPhotoList:videoPhotoList,updateTime:updateTime,id:myStore.state.readDiary.id,name:name},
+					name:name
+				})
+			}
+		}
+	}
+	
 // 获取选择的心情与天气
 	function getWeather_Mood(e,type) {
 		if (type==="weather"){
 			weather.value = myStore.state.record.weatherList[e.detail.value]
-			myStore.commit('record/changeState',{name:'weather',value:weather.value})
 		}else if(type==="mood"){
 			mood.value = myStore.state.record.moodList[e.detail.value]
-			myStore.commit('record/changeState',{name:'mood',value:mood.value})
 		}
 	}
 	
 //获取用户的地址 
 	async function getAddress(){	
 		const ad = await uni.chooseLocation()
-		console.log(ad);
-		myStore.commit('record/changeState',{name:'address',value:ad.name})
+		address.value = ad.name
 	}
-	
-	onBeforeMount(()=>{
-		myStore.commit('record/changeState',{name:'weather',value:weather.value})
-		myStore.commit('record/changeState',{name:'mood',value:mood.value})
-	})
-	
-	onMounted(() => {
-		myStore.commit('record/changeState',{name:'addTime',value:Date.now()})
-	})
+
 	async function saveDiary(diaryData,writeTime){
 		const diaryRes = await uni.request({
 								url:'diary',
@@ -235,6 +363,7 @@
 			myStore.commit('record/changeState',{name:'diary',value:''})
 			myStore.commit('record/emptyList','imageList')
 			myStore.commit('record/emptyList','videoList')
+			diary.value=''
 		}else{
 			console.log(saveSwitch);
 		}
@@ -251,13 +380,13 @@
 		margin-bottom: 20rpx;
 		.rtitle {
 			text-align: center;
+			margin-bottom: 40rpx;
 		}
 
 		.weather-mood {
 			width: 95%;
 			display: flex;
 			margin: 0 auto;
-			margin-top: 40rpx;
 			.boxweather,.boxmood{
 				display: flex;
 				justify-content: center;
@@ -336,6 +465,6 @@
 
 <style>
 	page {
-		background-color: antiquewhite;
+		background-color: #fae0b2;
 	}
 </style>

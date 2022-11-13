@@ -1,5 +1,6 @@
 "use strict";
 var common_vendor = require("../common/vendor.js");
+var js_way = require("../js/way.js");
 if (!Array) {
   const _easycom_uni_icons2 = common_vendor.resolveComponent("uni-icons");
   const _easycom_uni_datetime_picker2 = common_vendor.resolveComponent("uni-datetime-picker");
@@ -13,13 +14,73 @@ if (!Math) {
 const FilePicker = () => "./FilePicker.js";
 const _sfc_main = {
   __name: "WeatherAndAddress",
+  props: ["operationType"],
   setup(__props) {
+    const props = __props;
     common_vendor.useCssVars((_ctx) => ({
       "1ec23634-statusBarHeight": common_vendor.unref(statusBarHeight)
     }));
     const myStore = common_vendor.useStore();
-    let statusBarHeight = common_vendor.inject("statusBarHeight") * 2 + "rpx", weather = common_vendor.ref(myStore.state.record.weatherList[0]), mood = common_vendor.ref(myStore.state.record.moodList[0]);
+    let statusBarHeight = common_vendor.inject("statusBarHeight") * 2 + "rpx", weather = common_vendor.ref(myStore.state.record.weatherList[0]), mood = common_vendor.ref(myStore.state.record.moodList[0]), address = common_vendor.ref(myStore.state.record.address), diary = common_vendor.ref(myStore.state.record.diary);
+    common_vendor.reactive(myStore.state.record.imageList);
+    common_vendor.reactive(myStore.state.record.videoList);
+    let operationType = props.operationType, oldImage = null, oldVideo = null, oldVideoPhoto = null, newImage = myStore.state.readDiary.newImage, newVideo = myStore.state.readDiary.newVideo, newVideoPhoto = myStore.state.readDiary.newVideoPhoto;
     common_vendor.ref(0);
+    common_vendor.onBeforeMount(() => {
+      if (operationType === "editor") {
+        statusBarHeight = 0;
+        weather.value = myStore.state.readDiary.weather;
+        mood.value = myStore.state.readDiary.mood;
+        address.value = myStore.state.readDiary.address;
+        diary.value = myStore.state.readDiary.diary;
+        common_vendor.reactive(myStore.state.readDiary.image);
+        common_vendor.reactive(myStore.state.readDiary.video);
+        oldImage = js_way.copy(myStore.state.readDiary.image);
+        oldVideo = js_way.copy(myStore.state.readDiary.video);
+        oldVideoPhoto = js_way.copy(myStore.state.readDiary.videoPhoto);
+      } else if (operationType === "save") {
+        myStore.commit("record/changeState", { name: "weather", value: weather.value });
+        myStore.commit("record/changeState", { name: "mood", value: mood.value });
+      }
+    });
+    common_vendor.onMounted(() => {
+      myStore.commit("record/changeState", { name: "addTime", value: Date.now() });
+    });
+    common_vendor.watch(weather, (nv) => {
+      if (operationType === "editor") {
+        console.log(12345643213245464);
+        myStore.commit("readDiary/changeState", { name: "weather", value: nv });
+        myStore.commit("readDiary/updateData", { name: "weather", value: nv });
+        console.log(123456789);
+      } else if (operationType === "save") {
+        myStore.commit("record/changeState", { name: "weather", value: nv });
+      }
+    });
+    common_vendor.watch(mood, (nv) => {
+      if (operationType === "editor") {
+        myStore.commit("readDiary/changeState", { name: "mood", value: nv });
+        myStore.commit("readDiary/changeState", { name: "mood", value: nv });
+        myStore.commit("readDiary/updateData", { name: "mood", value: nv });
+      } else if (operationType === "save") {
+        myStore.commit("record/changeState", { name: "mood", value: nv });
+      }
+    });
+    common_vendor.watch(address, (nv) => {
+      if (operationType === "editor") {
+        myStore.commit("readDiary/changeState", { name: "address", value: nv });
+        myStore.commit("readDiary/updateData", { name: "address", value: nv });
+      } else if (operationType === "save") {
+        myStore.commit("record/changeState", { name: "address", value: nv });
+      }
+    });
+    common_vendor.watch(diary, (nv) => {
+      if (operationType === "editor") {
+        myStore.commit("readDiary/changeState", { name: "diary", value: nv });
+        myStore.commit("readDiary/updateData", { name: "diary", value: nv });
+      } else if (operationType === "save") {
+        myStore.commit("record/changeState", { name: "diary", value: nv });
+      }
+    });
     function focus() {
       if (!myStore.state.hasLogin) {
         common_vendor.index.showModal({
@@ -34,27 +95,75 @@ const _sfc_main = {
         });
       }
     }
+    function update() {
+      console.log(myStore.state.readDiary.updateData);
+      console.log(newImage);
+      console.log(newVideo);
+      console.log(newVideoPhoto);
+      console.log(oldImage);
+      console.log(oldVideo);
+      console.log(oldVideoPhoto);
+      let updateTime = new Date().getTime();
+      console.log(updateTime);
+      if (myStore.state.readDiary.updateData !== {}) {
+        common_vendor.index.request({
+          url: "diary",
+          method: "PUT",
+          data: { id: myStore.state.readDiary.id, data: myStore.state.readDiary.updateData, updateTime },
+          success: (res) => {
+            console.log(res);
+          }
+        });
+      }
+      if (newImage.length > 0) {
+        for (var i = 0; i < newImage.length; i++) {
+          let name = i + myStore.state.userInfo.openId + "" + updateTime;
+          let image = JSON.stringify(myStore.state.readDiary.image);
+          common_vendor.index.uploadFile({
+            url: "updateImage",
+            fileType: "image",
+            filePath: newImage[i],
+            formData: { newImage: JSON.stringify(newImage), ImageList: image, updateTime, id: myStore.state.readDiary.id, name },
+            name
+          });
+        }
+      }
+      if (newVideo.length > 0) {
+        for (var i = 0; i < newVideo.length; i++) {
+          let name = i + myStore.state.userInfo.openId + "" + updateTime;
+          let videoList = JSON.stringify(myStore.state.readDiary.video);
+          common_vendor.index.uploadFile({
+            url: "updateVideo",
+            fileType: "video",
+            filePath: newVideo[i],
+            formData: { newVideo: JSON.stringify(newVideo), videoList, updateTime, id: myStore.state.readDiary.id, name },
+            name
+          });
+        }
+        for (var i = 0; i < newVideoPhoto.length; i++) {
+          let name = i + myStore.state.userInfo.openId + "" + updateTime;
+          let videoPhotoList = JSON.stringify(myStore.state.readDiary.videoPhoto);
+          common_vendor.index.uploadFile({
+            url: "updateVideo",
+            fileType: "image",
+            filePath: newVideoPhoto[i],
+            formData: { newVideoPhoto: JSON.stringify(newVideoPhoto), videoPhotoList, updateTime, id: myStore.state.readDiary.id, name },
+            name
+          });
+        }
+      }
+    }
     function getWeather_Mood(e, type) {
       if (type === "weather") {
         weather.value = myStore.state.record.weatherList[e.detail.value];
-        myStore.commit("record/changeState", { name: "weather", value: weather.value });
       } else if (type === "mood") {
         mood.value = myStore.state.record.moodList[e.detail.value];
-        myStore.commit("record/changeState", { name: "mood", value: mood.value });
       }
     }
     async function getAddress() {
       const ad = await common_vendor.index.chooseLocation();
-      console.log(ad);
-      myStore.commit("record/changeState", { name: "address", value: ad.name });
+      address.value = ad.name;
     }
-    common_vendor.onBeforeMount(() => {
-      myStore.commit("record/changeState", { name: "weather", value: weather.value });
-      myStore.commit("record/changeState", { name: "mood", value: mood.value });
-    });
-    common_vendor.onMounted(() => {
-      myStore.commit("record/changeState", { name: "addTime", value: Date.now() });
-    });
     async function saveDiary(diaryData, writeTime) {
       const diaryRes = await common_vendor.index.request({
         url: "diary",
@@ -186,59 +295,68 @@ const _sfc_main = {
         myStore.commit("record/changeState", { name: "diary", value: "" });
         myStore.commit("record/emptyList", "imageList");
         myStore.commit("record/emptyList", "videoList");
+        diary.value = "";
       } else {
         console.log(saveSwitch);
       }
     }
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: common_vendor.unref(weather),
-        b: common_vendor.o(($event) => common_vendor.isRef(weather) ? weather.value = $event.detail.value : weather = $event.detail.value),
-        c: common_vendor.p({
+        a: common_vendor.unref(operationType) == "save"
+      }, common_vendor.unref(operationType) == "save" ? {} : {}, {
+        b: common_vendor.unref(weather),
+        c: common_vendor.o(($event) => common_vendor.isRef(weather) ? weather.value = $event.detail.value : weather = $event.detail.value),
+        d: common_vendor.p({
           type: "bottom",
           size: "30",
           color: "gray"
         }),
-        d: _ctx.$store.state.record.weatherList,
-        e: common_vendor.o(($event) => getWeather_Mood($event, "weather")),
-        f: common_vendor.unref(mood),
-        g: common_vendor.o(($event) => common_vendor.isRef(mood) ? mood.value = $event.detail.value : mood = $event.detail.value),
-        h: common_vendor.p({
+        e: _ctx.$store.state.record.weatherList,
+        f: common_vendor.o(($event) => getWeather_Mood($event, "weather")),
+        g: common_vendor.unref(mood),
+        h: common_vendor.o(($event) => common_vendor.isRef(mood) ? mood.value = $event.detail.value : mood = $event.detail.value),
+        i: common_vendor.p({
           type: "bottom",
           size: "30",
           color: "gray"
         }),
-        i: _ctx.$store.state.record.moodList,
-        j: common_vendor.o(($event) => getWeather_Mood($event, "mood")),
-        k: _ctx.$store.state.record.address,
-        l: common_vendor.o(($event) => _ctx.$store.state.record.address = $event.detail.value),
-        m: common_vendor.o(getAddress),
-        n: common_vendor.p({
+        j: _ctx.$store.state.record.moodList,
+        k: common_vendor.o(($event) => getWeather_Mood($event, "mood")),
+        l: common_vendor.unref(address),
+        m: common_vendor.o(($event) => common_vendor.isRef(address) ? address.value = $event.detail.value : address = $event.detail.value),
+        n: common_vendor.o(getAddress),
+        o: common_vendor.p({
           type: "location-filled",
           size: "30",
           color: "#cc86d1"
         }),
-        o: common_vendor.o(($event) => _ctx.$store.state.record.addTime = $event),
-        p: common_vendor.p({
+        p: common_vendor.unref(operationType) !== "editor"
+      }, common_vendor.unref(operationType) !== "editor" ? {
+        q: common_vendor.o(($event) => _ctx.$store.state.record.addTime = $event),
+        r: common_vendor.p({
           type: "datetime",
           modelValue: _ctx.$store.state.record.addTime
-        }),
-        q: common_vendor.p({
+        })
+      } : {}, {
+        s: common_vendor.p({
           title: "\u5982\u9700\u4E0A\u4F20\u56FE\u7247\u89C6\u9891\u8BF7\u70B9\u51FB",
-          imageList: _ctx.$store.state.record.imageList,
-          videoList: _ctx.$store.state.record.videoList,
           deleteInco: true,
+          operationType: common_vendor.unref(operationType),
           backgroundColor: "#dcffbd"
         }),
-        r: _ctx.$store.state.record.diary
-      }, _ctx.$store.state.record.diary ? {
-        s: common_vendor.o(save)
+        t: _ctx.$store.state.record.diary && common_vendor.unref(operationType) === "save"
+      }, _ctx.$store.state.record.diary && common_vendor.unref(operationType) === "save" ? {
+        v: common_vendor.o(save)
       } : {}, {
-        t: common_vendor.s(_ctx.__cssVars()),
-        v: common_vendor.o(focus),
-        w: common_vendor.s(_ctx.__cssVars()),
-        x: _ctx.$store.state.record.diary,
-        y: common_vendor.o(($event) => _ctx.$store.state.record.diary = $event.detail.value)
+        w: _ctx.$store.state.readDiary.diary && common_vendor.unref(operationType) === "editor"
+      }, _ctx.$store.state.readDiary.diary && common_vendor.unref(operationType) === "editor" ? {
+        x: common_vendor.o(update)
+      } : {}, {
+        y: common_vendor.s(_ctx.__cssVars()),
+        z: common_vendor.o(focus),
+        A: common_vendor.s(_ctx.__cssVars()),
+        B: common_vendor.unref(diary),
+        C: common_vendor.o(($event) => common_vendor.isRef(diary) ? diary.value = $event.detail.value : diary = $event.detail.value)
       });
     };
   }

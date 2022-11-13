@@ -22,10 +22,9 @@ const __default__ = {
   },
   props: {
     title: String,
-    imageList: Array,
-    videoList: Array,
     deleteInco: Boolean,
-    backgroundColor: String
+    backgroundColor: String,
+    operationType: String
   },
   onReady: function() {
     this.videoContext = common_vendor.index.createVideoContext("myvideo", this);
@@ -40,6 +39,7 @@ const __default__ = {
       }
       let res = await common_vendor.index.chooseMedia();
       console.log(res);
+      console.log(this.$store.state.readDiary);
       if (res.errMsg === "chooseMedia:ok") {
         for (var i = 0; i < res.tempFiles.length; i++) {
           if (res.type === "video") {
@@ -49,19 +49,41 @@ const __default__ = {
               });
               return false;
             }
-            this.myStore.commit("record/pushList", { name: "videoList", value: res.tempFiles[i].tempFilePath });
-            this.myStore.commit("record/pushList", { name: "videoPhoto", value: res.tempFiles[i].thumbTempFilePath });
-            console.log(this.$store.state.record.videoPhoto);
+            if (this.operationType === "save") {
+              this.myStore.commit("record/pushList", { name: "videoList", value: res.tempFiles[i].tempFilePath });
+              this.myStore.commit("record/pushList", { name: "videoPhoto", value: res.tempFiles[i].thumbTempFilePath });
+            } else if (this.operationType === "editor") {
+              this.myStore.commit("readDiary/pushList", { name: "video", value: res.tempFiles[i].tempFilePath });
+              this.myStore.commit("readDiary/pushList", { name: "videoPhoto", value: res.tempFiles[i].thumbTempFilePath });
+              this.myStore.commit("readDiary/pushList", { name: "newVideo", value: res.tempFiles[i].tempFilePath });
+              this.myStore.commit("readDiary/pushList", { name: "newVideoPhoto", value: res.tempFiles[i].thumbTempFilePath });
+            }
           } else if (res.type === "image") {
-            this.myStore.commit("record/pushList", { name: "imageList", value: res.tempFiles[i].tempFilePath });
+            if (this.operationType === "save") {
+              this.myStore.commit("record/pushList", { name: "imageList", value: res.tempFiles[i].tempFilePath });
+            } else if (this.operationType === "editor") {
+              this.myStore.commit("readDiary/pushList", { name: "image", value: res.tempFiles[i].tempFilePath });
+              this.myStore.commit("readDiary/pushList", { name: "newImage", value: res.tempFiles[i].tempFilePath });
+            }
           }
         }
       }
     },
     deleteVideo: function(index) {
-      this.$store.commit("record/popList", { name: "videoList", index });
-      this.$store.commit("record/popList", { name: "videoPhoto", index });
-      console.log(this.$store.state.record.videoPhoto);
+      if (this.operationType === "save") {
+        this.$store.commit("record/popList", { name: "videoList", index });
+        this.$store.commit("record/popList", { name: "videoPhoto", index });
+      } else if (this.operationType === "editor") {
+        this.$store.commit("readDiary/popList", { name: "video", index });
+        this.$store.commit("readDiary/popList", { name: "videoPhoto", index });
+      }
+    },
+    deleteImage: function(index) {
+      if (this.operationType === "save") {
+        this.$store.commit("record/popList", { name: "imageList", index });
+      } else if (this.operationType === "editor") {
+        this.$store.commit("readDiary/popList", { name: "image", index });
+      }
     },
     previewVideo: function(videoUrl) {
       this.videoUrl = videoUrl;
@@ -88,30 +110,28 @@ const __default__ = {
 };
 const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
   __name: "FilePicker",
-  props: ["backgroundColor"],
+  props: ["backgroundColor", "operationType"],
   setup(__props) {
     const props = __props;
     common_vendor.useCssVars((_ctx) => ({
       "539bc876-backgroundColor": common_vendor.unref(backgroundColor)
     }));
     let backgroundColor = props.backgroundColor;
+    let operationType = props.operationType;
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: common_vendor.f(__props.imageList, (i, index, i0) => {
+        a: common_vendor.f(common_vendor.unref(operationType) === "save" ? _ctx.$store.state.record.imageList : _ctx.$store.state.readDiary.image, (i, index, i0) => {
           return common_vendor.e({
             a: i,
             b: common_vendor.o(($event) => _ctx.previewImage(i))
           }, __props.deleteInco ? {
-            c: common_vendor.o(($event) => _ctx.$store.commit("record/popList", {
-              name: "imageList",
-              index
-            }))
+            c: common_vendor.o(($event) => _ctx.deleteImage(index))
           } : {}, {
             d: i
           });
         }),
         b: __props.deleteInco,
-        c: common_vendor.f(__props.videoList, (i, index, i0) => {
+        c: common_vendor.f(common_vendor.unref(operationType) === "save" ? _ctx.$store.state.record.videoList : _ctx.$store.state.readDiary.video, (i, index, i0) => {
           return common_vendor.e({
             a: i
           }, __props.deleteInco ? {

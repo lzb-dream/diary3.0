@@ -1,5 +1,5 @@
 <template>
-	<WeatherAndAddress></WeatherAndAddress>
+	<WeatherAndAddress operationType="save"></WeatherAndAddress>
 </template>
 
 <script setup>

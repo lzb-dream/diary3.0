@@ -121,7 +121,7 @@
 		let storage = null
 		if (imageSave){
 			uni.uploadFile({
-				url:'',
+				url:'userManagement',
 				filePath:userInfo.headPortrait,
 				fileType: 'image',
 				name:userInfo.openId+String(addTime),
@@ -144,7 +144,7 @@
 		} 
 		if (nickNameSave) {
 			uni.request({
-				url:'',
+				url:'userManagement',
 				method:"POST",
 				data:{openId:userInfo.openId,addTime:addTime,nickName:userInfo.nickName,identify:'nickName'},
 				success: res => {
@@ -178,7 +178,7 @@
 				uni.login({
 					success: res => {
 						uni.request({
-							url: '',
+							url: 'userManagement',
 							data: {
 								js_code: res.code,
 								headPortrait: headPortrait,

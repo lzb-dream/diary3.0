@@ -21,7 +21,8 @@ var record = {
       state[obj.name].push(obj.value);
     },
     popList(state, obj) {
-      state[obj.name].pop(obj.index);
+      console.log(state);
+      state[obj.name].splice(obj.index, 1);
     },
     emptyList(state, name) {
       state[name].length = 0;
