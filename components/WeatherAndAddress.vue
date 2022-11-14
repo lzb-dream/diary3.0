@@ -2,6 +2,12 @@
 	<view class="heard">
 		<view class="rtitle" v-if="operationType=='save'">
 			<text>记录点点滴滴</text>
+			<view class="" v-if="!readDiary.editor">
+				<uni-notice-bar show-icon scrollable
+				text="uni-app 版正式发布，开发一次，同时发布iOS、Android、H5、微信小程序、支付宝小程序、百度小程序、头条小程序等7大平台。"
+				speed="70"/>
+			</view>
+			
 		</view>
 		<view class="weather-mood">
 			<view class="boxweather">
@@ -39,7 +45,11 @@
 		</view>
 		<FilePicker title="如需上传图片视频请点击" :deleteInco="true"  :operationType="operationType" backgroundColor="#dcffbd" ></FilePicker>
 		<button class="save" v-if="$store.state.record.diary&&operationType==='save'" @click="save">保存</button>
-		<button class="save" v-if="$store.state.readDiary.diary&&operationType==='editor'" @click="update">更改</button>
+		<view class="viewButton" v-if="$store.state.readDiary.diary&&operationType==='editor'">
+			<button @click="deleteDiary" class="deleteDiary">删除</button>
+			<button @click="update" class="updateDiary">更改</button>
+		</view>
+		
 	</view>
 	
 	<textarea name="" placeholder="写已写今天都发生了什么吧₍˄·͈༝·͈˄*₎◞ " maxlength="-1"
@@ -52,10 +62,13 @@
 	import FilePicker from '@/components/FilePicker.vue'
 	import {ref,onMounted,inject,watch,onBeforeMount,reactive} from 'vue'
 	import {useStore} from 'vuex'
-	import {copy} from '@/js/way.js'
+	import {copy,requests,uploadfile} from '@/js/way.js'
 	const props = defineProps(['operationType'])
 	const myStore = useStore()
-
+	const readDiary = myStore.state.readDiary
+	const deleteImage = readDiary.deleteImage
+	const deleteVideo = readDiary.deleteVideo
+	const deleteVideoPhoto = readDiary.deleteVideoPhoto
 	let	statusBarHeight = inject('statusBarHeight') * 2 + 'rpx',
 		weather = ref(myStore.state.record.weatherList[0]),
 		mood = ref(myStore.state.record.moodList[0]),
@@ -68,25 +81,22 @@
 		oldImage = null,
 		oldVideo = null,
 		oldVideoPhoto = null,
-		newImage = myStore.state.readDiary.newImage,
-		newVideo = myStore.state.readDiary.newVideo,
-		newVideoPhoto = myStore.state.readDiary.newVideoPhoto,
+		newImage = readDiary.newImage,
+		newVideo = readDiary.newVideo,
+		newVideoPhoto = readDiary.newVideoPhoto,
 		index = ref(0);	
 	
 	onBeforeMount(()=>{
 		// 编辑模式下的默认值
 		if(operationType==='editor'){
 			statusBarHeight=0
-			weather.value = myStore.state.readDiary.weather
-			mood.value = myStore.state.readDiary.mood
-			address.value = myStore.state.readDiary.address
-			diary.value = myStore.state.readDiary.diary
-			imageList = reactive(myStore.state.readDiary.image)
-			videoList = reactive(myStore.state.readDiary.video)
+			weather.value = readDiary.weather
+			mood.value = readDiary.mood
+			address.value = readDiary.address
+			diary.value = readDiary.diary
+			imageList = reactive(readDiary.image)
+			videoList = reactive(readDiary.video)
 			
-			oldImage = copy(myStore.state.readDiary.image)
-			oldVideo = copy(myStore.state.readDiary.video)
-			oldVideoPhoto = copy(myStore.state.readDiary.videoPhoto)
 		}else if(operationType==='save'){
 			// 天气心情默认值
 			myStore.commit('record/changeState',{name:'weather',value:weather.value})
@@ -99,10 +109,8 @@
 	//监听天气
 	watch(weather,(nv)=>{
 		if(operationType==='editor'){
-			console.log(12345643213245465);
 			myStore.commit('readDiary/changeState',{name:'weather',value:nv})
 			myStore.commit('readDiary/updateData',{name:'weather',value:nv})
-			console.log(123456789);
 		}else if(operationType==='save'){
 			myStore.commit('record/changeState',{name:'weather',value:nv})
 		}
@@ -150,65 +158,50 @@
 		}
 	}
 	
-	function update(){
-		console.log(myStore.state.readDiary.updateData);
-		console.log(newImage);
-		console.log(newVideo);
-		console.log(newVideoPhoto);
-		
-		console.log(oldImage);
-		console.log(oldVideo);
-		console.log(oldVideoPhoto);
+	async function update(){
 		let updateTime = new Date().getTime()
-		console.log(updateTime);
-		if(myStore.state.readDiary.updateData!=={}){
-			uni.request({
-				url:'diary',
-				method:'PUT',
-				data:{id:myStore.state.readDiary.id,data:myStore.state.readDiary.updateData,updateTime:updateTime},
-				success: res => {
-					console.log(res);
-				}
-			})
+		let openId = myStore.state.userInfo.openId
+		if(readDiary.updateData!=={}){
+			const diaryData = {id:readDiary.id,data:readDiary.updateData,updateTime:updateTime}
+			let res = await requests({url:'diary',data:diaryData,method:'PUT'})
+			console.log('日记文本',res);
 		}
 
 		if(newImage.length>0){
 			for (var i = 0; i < newImage.length; i++) {
-				let name = i+myStore.state.userInfo.openId+''+updateTime
-				let image = JSON.stringify(myStore.state.readDiary.image) 
-				uni.uploadFile({
-					url:'updateImage',
-					fileType:'image',
-					filePath:newImage[i],
-					formData:{newImage:JSON.stringify(newImage),ImageList:image,updateTime:updateTime,id:myStore.state.readDiary.id,name:name},
-					name:name
-				})
+				let name = 'image'+openId+''+updateTime
+				const formData = {updateTime:updateTime,diaryId:readDiary.id,name:name,openId:openId}
+				const res = await uploadfile({url:'imageManagement',filePath:newImage[i],formData:formData,name:name})
+				console.log('新图片',res);
 			}
 		}
+		
 		if(newVideo.length>0){
 			for (var i = 0; i < newVideo.length; i++) {
-				let name = i+myStore.state.userInfo.openId+''+updateTime
-				let videoList = JSON.stringify(myStore.state.readDiary.video) 
-				uni.uploadFile({
-					url:'updateVideo',
-					fileType:'video',
-					filePath:newVideo[i],
-					formData:{newVideo:JSON.stringify(newVideo),videoList:videoList,updateTime:updateTime,id:myStore.state.readDiary.id,name:name},
-					name:name
-				})
+				let name = 'video'+openId+''+updateTime
+				const formData = {updateTime:updateTime,diaryId:readDiary.id,name:name,openId:openId}
+				const res = await uploadfile({url:'videoManagement',filePath:newVideo[i] ,formData:formData,name:name})
+				console.log('新视频',res);
 			}
 			for (var i = 0; i < newVideoPhoto.length; i++) {
-				let name = i+myStore.state.userInfo.openId+''+updateTime
-				let videoPhotoList = JSON.stringify(myStore.state.readDiary.videoPhoto) 
-				uni.uploadFile({
-					url:'updateVideo',
-					fileType:'image',
-					filePath:newVideoPhoto[i],
-					formData:{newVideoPhoto:JSON.stringify(newVideoPhoto),videoPhotoList:videoPhotoList,updateTime:updateTime,id:myStore.state.readDiary.id,name:name},
-					name:name
-				})
+				let name = 'videoPhoto'+openId+''+updateTime
+				const formData = {updateTime:updateTime,diaryId:myStore.state.readDiary.id,name:name,openId:openId}
+				const res = await uploadfile({url:'videoPhotoManagement',filePath:newVideo[i] ,formData:formData,name:name})
+				console.log('新视频图片',res);
 			}
 		}
+		
+		if(deleteImage.length>0){
+			
+		}
+		
+		if(deleteVideo.length>0){
+			
+		}
+		if(deleteVideoPhoto.length>0){
+			
+		}
+		
 	}
 	
 // 获取选择的心情与天气
@@ -449,6 +442,18 @@
 	.save {
 		background-image: linear-gradient(to right, pink, yellow);
 		width: 100%;
+	}
+	.viewButton{
+		width: 100%;
+		display: flex;
+		.deleteDiary {
+			width: 40%;
+			background-color: #ba0000;
+		}
+		.updateDiary {
+			width: 40%;
+			background-image: linear-gradient(to right, pink, yellow);
+		}
 	}
 
 	textarea {

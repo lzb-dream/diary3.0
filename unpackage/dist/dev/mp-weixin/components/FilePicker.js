@@ -159,7 +159,8 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
       } : {}, {
         i: common_vendor.p({
           title: __props.title,
-          thumb: "http://127.0.0.1:8000/static/inco/picture.png"
+          thumb: "http://127.0.0.1:8000/static/inco/picture.png",
+          open: _ctx.$store.state.readDiary.editor
         }),
         j: common_vendor.s(_ctx.__cssVars()),
         k: _ctx.videoplay

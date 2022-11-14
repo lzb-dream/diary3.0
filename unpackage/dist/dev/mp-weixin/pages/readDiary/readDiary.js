@@ -16,21 +16,13 @@ const _sfc_main = {
   setup(__props) {
     const myStore = common_vendor.useStore();
     const readDiary = myStore.state.readDiary;
-    console.log(readDiary);
-    common_vendor.onBeforeMount(() => {
-      console.log(readDiary);
-      myStore.commit("readDiary/changeState", { name: "oldWeather", value: readDiary.weather });
-      myStore.commit("readDiary/changeState", { name: "oldMood", value: readDiary.mood });
-      myStore.commit("readDiary/changeState", { name: "oldAddress", value: readDiary.address });
-      myStore.commit("readDiary/changeState", { name: "oldVideo", value: js_way.copy(readDiary.video) });
-      myStore.commit("readDiary/changeState", { name: "oldVideoPhoto", value: js_way.copy(readDiary.videoPhoto) });
-      myStore.commit("readDiary/changeState", { name: "oldImage", value: js_way.copy(readDiary.image) });
-      myStore.commit("readDiary/changeState", { name: "oldDiary", value: readDiary.diary });
-      console.log("oldVideo", readDiary.oldVideo);
-    });
-    common_vendor.watch(readDiary.video, (nv) => {
-      console.log("\u76D1\u542C", nv);
-    });
+    myStore.commit("readDiary/changeState", { name: "oldWeather", value: readDiary.weather });
+    myStore.commit("readDiary/changeState", { name: "oldMood", value: readDiary.mood });
+    myStore.commit("readDiary/changeState", { name: "oldAddress", value: readDiary.address });
+    myStore.commit("readDiary/changeState", { name: "oldVideo", value: js_way.copy(readDiary.video) });
+    myStore.commit("readDiary/changeState", { name: "oldVideoPhoto", value: js_way.copy(readDiary.videoPhoto) });
+    myStore.commit("readDiary/changeState", { name: "oldImage", value: js_way.copy(readDiary.image) });
+    myStore.commit("readDiary/changeState", { name: "oldDiary", value: readDiary.diary });
     function mide() {
       if (readDiary.image || readDiary.video) {
         return true;
@@ -55,7 +47,6 @@ const _sfc_main = {
         myStore.commit("readDiary/putList", { name: "video", value: readDiary.oldVideo });
         myStore.commit("readDiary/putList", { name: "videoPhoto", value: readDiary.oldVideoPhoto });
         myStore.commit("readDiary/putList", { name: "image", value: readDiary.oldImage });
-        console.log(readDiary);
       }
       common_vendor.index.switchTab({
         url: "/pages/my/my",
@@ -63,6 +54,9 @@ const _sfc_main = {
           myStore.commit("readDiary/changeState", { name: "editor", value: false });
         }
       });
+      myStore.commit("readDiary/empty", "deleteVideo");
+      myStore.commit("readDiary/empty", "deleteVideoPhoto");
+      myStore.commit("readDiary/empty", "deleteImage");
     }
     return (_ctx, _cache) => {
       return common_vendor.e({

@@ -9,7 +9,6 @@ require("./store/my/index.js");
 require("./store/readDiary/index.js");
 if (!Math) {
   "./pages/record/record.js";
-  "./pages/square/square.js";
   "./pages/my/my.js";
   "./pages/readDiary/readDiary.js";
 }
@@ -21,6 +20,7 @@ const _sfc_main = {
       index: 1,
       text: "1"
     });
+    this.$store.dispatch("readDiary/getUrl");
     this.$store.commit("getUserInfo");
     let statusBarHeight = common_vendor.index.getSystemInfoSync().statusBarHeight;
     console.log(statusBarHeight);

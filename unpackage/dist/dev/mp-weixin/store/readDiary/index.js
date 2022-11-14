@@ -26,9 +26,14 @@ var readDiary = {
     newVideoPhoto: [],
     deleteImage: [],
     deleteVideo: [],
-    deleteVideoPhoto: []
+    deleteVideoPhoto: [],
+    URl: ""
   },
-  getters: {},
+  getters: {
+    getUrl(state, getters, rootState, rootGetters) {
+      console.log(rootState);
+    }
+  },
   mutations: {
     changeState(state, obj) {
       state[obj.name] = obj.value;
@@ -37,7 +42,21 @@ var readDiary = {
       state[obj.name].push(obj.value);
     },
     popList(state, obj) {
-      console.log(state);
+      if (obj.name === "image" || obj.name === "video" || obj.name === "videoPhoto") {
+        let num = state[obj.name][obj.index].indexOf("http://127.0.0.1:8000/");
+        if (num > -1) {
+          switch (obj.name) {
+            case "image":
+              state.deleteImage.push(obj.value);
+              break;
+            case "video":
+              state.deleteVideo.push(obj.value);
+              break;
+            case "VideoPhoto":
+              state.deleteVideoPhoto.push(obj.value);
+          }
+        }
+      }
       state[obj.name].splice(obj.index, 1);
     },
     updateData(state, obj) {
@@ -50,8 +69,15 @@ var readDiary = {
         state[obj.name][key] = obj.value[key];
       }
       console.log(obj.name, state[obj.name]);
+    },
+    empty(state, listName) {
+      state[listName].length = 0;
     }
   },
-  actions: {}
+  actions: {
+    getUrl(context) {
+      context.commit("changeState", { name: "URL", value: context.rootState.URL });
+    }
+  }
 };
 exports.readDiary = readDiary;

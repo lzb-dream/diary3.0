@@ -7,12 +7,12 @@
 				"navigationStyle": "custom"
 			}
 		},
-		{
-			"path": "pages/square/square",
-			"style": {
-				"navigationBarTitleText": "uni-app"
-			} 
-		},
+		// {
+		// 	"path": "pages/square/square",
+		// 	"style": {
+		// 		"navigationBarTitleText": "uni-app"
+		// 	} 
+		// },
 		{
 			"path": "pages/my/my",
 			"style": {
@@ -49,12 +49,14 @@
 					"text": "记录生活",
 					"iconPath": "static/record_0.png",
 					"selectedIconPath": "static/record_1.png"
-				}, {
-					"pagePath": "pages/square/square",
-					"text": "日记广场",
-					"iconPath": "static/love_0.png",
-					"selectedIconPath": "static/love_1.png"
-				}, {
+				}, 
+				// {
+				// 	"pagePath": "pages/square/square",
+				// 	"text": "日记广场",
+				// 	"iconPath": "static/love_0.png",
+				// 	"selectedIconPath": "static/love_1.png"
+				// },
+				{
 					"pagePath": "pages/my/my",
 					"text": "我的",
 					"iconPath": "static/my_0.png",

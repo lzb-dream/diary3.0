@@ -86,6 +86,18 @@
   background-image: linear-gradient(to right, pink, yellow);
   width: 100%;
 }
+.viewButton.data-v-1ec23634 {
+  width: 100%;
+  display: flex;
+}
+.viewButton .deleteDiary.data-v-1ec23634 {
+  width: 40%;
+  background-color: #ba0000;
+}
+.viewButton .updateDiary.data-v-1ec23634 {
+  width: 40%;
+  background-image: linear-gradient(to right, pink, yellow);
+}
 textarea.data-v-1ec23634 {
   margin: 0 auto;
   width: 92%;

@@ -13,3 +13,22 @@ export function copy(obj) {
         }
         return result
 }
+
+export async function requests(obj){
+	const res = await uni.request({
+		url:obj.url,
+		data:obj.data,
+		method:obj.method
+	})
+	return res
+}
+
+export async function uploadfile(obj){
+	const res = await uni.uploadFile({
+		url:obj.url,
+		filePath:obj.filePath,
+		formData:obj.formData,
+		name:obj.name
+	})
+	return res
+}

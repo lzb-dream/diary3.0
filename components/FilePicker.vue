@@ -1,6 +1,6 @@
 <template>
 	<uni-collapse>
-		<uni-collapse-item :title="title" thumb="http://127.0.0.1:8000/static/inco/picture.png">
+		<uni-collapse-item :title="title" thumb="http://127.0.0.1:8000/static/inco/picture.png" :open="$store.state.readDiary.editor">
 			<view class="Media">
 				<view class="itemMedia" v-for="(i,index) in operationType==='save'?$store.state.record.imageList:$store.state.readDiary.image" :key="i">
 					<image :src="i" alt="" @click="previewImage(i)" mode="aspectFill"></image>
@@ -87,6 +87,7 @@ export default {
 				}
 			}
 		},
+		
 		deleteVideo: function (index){
 			if (this.operationType==='save'){
 				this.$store.commit('record/popList',{name:'videoList', index:index})
@@ -103,6 +104,7 @@ export default {
 				this.$store.commit('readDiary/popList',{name:'image', index:index})
 			}
 		},
+		
 		previewVideo: function (videoUrl) {
 			this.videoUrl =videoUrl;
 			this.videoContext.requestFullScreen();  //direction: 90  这个是控制全屏的时候视屏旋转多少度 

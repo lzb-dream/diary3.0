@@ -2,14 +2,16 @@
 var common_vendor = require("../common/vendor.js");
 var js_way = require("../js/way.js");
 if (!Array) {
+  const _easycom_uni_notice_bar2 = common_vendor.resolveComponent("uni-notice-bar");
   const _easycom_uni_icons2 = common_vendor.resolveComponent("uni-icons");
   const _easycom_uni_datetime_picker2 = common_vendor.resolveComponent("uni-datetime-picker");
-  (_easycom_uni_icons2 + _easycom_uni_datetime_picker2)();
+  (_easycom_uni_notice_bar2 + _easycom_uni_icons2 + _easycom_uni_datetime_picker2)();
 }
+const _easycom_uni_notice_bar = () => "../uni_modules/uni-notice-bar/components/uni-notice-bar/uni-notice-bar.js";
 const _easycom_uni_icons = () => "../uni_modules/uni-icons/components/uni-icons/uni-icons.js";
 const _easycom_uni_datetime_picker = () => "../uni_modules/uni-datetime-picker/components/uni-datetime-picker/uni-datetime-picker.js";
 if (!Math) {
-  (_easycom_uni_icons + _easycom_uni_datetime_picker + FilePicker)();
+  (_easycom_uni_notice_bar + _easycom_uni_icons + _easycom_uni_datetime_picker + FilePicker)();
 }
 const FilePicker = () => "./FilePicker.js";
 const _sfc_main = {
@@ -21,23 +23,24 @@ const _sfc_main = {
       "1ec23634-statusBarHeight": common_vendor.unref(statusBarHeight)
     }));
     const myStore = common_vendor.useStore();
+    const readDiary = myStore.state.readDiary;
+    const deleteImage = readDiary.deleteImage;
+    const deleteVideo = readDiary.deleteVideo;
+    const deleteVideoPhoto = readDiary.deleteVideoPhoto;
     let statusBarHeight = common_vendor.inject("statusBarHeight") * 2 + "rpx", weather = common_vendor.ref(myStore.state.record.weatherList[0]), mood = common_vendor.ref(myStore.state.record.moodList[0]), address = common_vendor.ref(myStore.state.record.address), diary = common_vendor.ref(myStore.state.record.diary);
     common_vendor.reactive(myStore.state.record.imageList);
     common_vendor.reactive(myStore.state.record.videoList);
-    let operationType = props.operationType, oldImage = null, oldVideo = null, oldVideoPhoto = null, newImage = myStore.state.readDiary.newImage, newVideo = myStore.state.readDiary.newVideo, newVideoPhoto = myStore.state.readDiary.newVideoPhoto;
+    let operationType = props.operationType, newImage = readDiary.newImage, newVideo = readDiary.newVideo, newVideoPhoto = readDiary.newVideoPhoto;
     common_vendor.ref(0);
     common_vendor.onBeforeMount(() => {
       if (operationType === "editor") {
         statusBarHeight = 0;
-        weather.value = myStore.state.readDiary.weather;
-        mood.value = myStore.state.readDiary.mood;
-        address.value = myStore.state.readDiary.address;
-        diary.value = myStore.state.readDiary.diary;
-        common_vendor.reactive(myStore.state.readDiary.image);
-        common_vendor.reactive(myStore.state.readDiary.video);
-        oldImage = js_way.copy(myStore.state.readDiary.image);
-        oldVideo = js_way.copy(myStore.state.readDiary.video);
-        oldVideoPhoto = js_way.copy(myStore.state.readDiary.videoPhoto);
+        weather.value = readDiary.weather;
+        mood.value = readDiary.mood;
+        address.value = readDiary.address;
+        diary.value = readDiary.diary;
+        common_vendor.reactive(readDiary.image);
+        common_vendor.reactive(readDiary.video);
       } else if (operationType === "save") {
         myStore.commit("record/changeState", { name: "weather", value: weather.value });
         myStore.commit("record/changeState", { name: "mood", value: mood.value });
@@ -48,10 +51,8 @@ const _sfc_main = {
     });
     common_vendor.watch(weather, (nv) => {
       if (operationType === "editor") {
-        console.log(12345643213245464);
         myStore.commit("readDiary/changeState", { name: "weather", value: nv });
         myStore.commit("readDiary/updateData", { name: "weather", value: nv });
-        console.log(123456789);
       } else if (operationType === "save") {
         myStore.commit("record/changeState", { name: "weather", value: nv });
       }
@@ -95,63 +96,42 @@ const _sfc_main = {
         });
       }
     }
-    function update() {
-      console.log(myStore.state.readDiary.updateData);
-      console.log(newImage);
-      console.log(newVideo);
-      console.log(newVideoPhoto);
-      console.log(oldImage);
-      console.log(oldVideo);
-      console.log(oldVideoPhoto);
+    async function update() {
       let updateTime = new Date().getTime();
-      console.log(updateTime);
-      if (myStore.state.readDiary.updateData !== {}) {
-        common_vendor.index.request({
-          url: "diary",
-          method: "PUT",
-          data: { id: myStore.state.readDiary.id, data: myStore.state.readDiary.updateData, updateTime },
-          success: (res) => {
-            console.log(res);
-          }
-        });
+      let openId = myStore.state.userInfo.openId;
+      if (readDiary.updateData !== {}) {
+        const diaryData = { id: readDiary.id, data: readDiary.updateData, updateTime };
+        let res = await js_way.requests({ url: "diary", data: diaryData, method: "PUT" });
+        console.log("\u65E5\u8BB0\u6587\u672C", res);
       }
       if (newImage.length > 0) {
         for (var i = 0; i < newImage.length; i++) {
-          let name = i + myStore.state.userInfo.openId + "" + updateTime;
-          let image = JSON.stringify(myStore.state.readDiary.image);
-          common_vendor.index.uploadFile({
-            url: "updateImage",
-            fileType: "image",
-            filePath: newImage[i],
-            formData: { newImage: JSON.stringify(newImage), ImageList: image, updateTime, id: myStore.state.readDiary.id, name },
-            name
-          });
+          let name = "image" + openId + updateTime;
+          const formData = { updateTime, diaryId: readDiary.id, name, openId };
+          const res = await js_way.uploadfile({ url: "imageManagement", filePath: newImage[i], formData, name });
+          console.log("\u65B0\u56FE\u7247", res);
         }
       }
       if (newVideo.length > 0) {
         for (var i = 0; i < newVideo.length; i++) {
-          let name = i + myStore.state.userInfo.openId + "" + updateTime;
-          let videoList = JSON.stringify(myStore.state.readDiary.video);
-          common_vendor.index.uploadFile({
-            url: "updateVideo",
-            fileType: "video",
-            filePath: newVideo[i],
-            formData: { newVideo: JSON.stringify(newVideo), videoList, updateTime, id: myStore.state.readDiary.id, name },
-            name
-          });
+          let name = "video" + openId + updateTime;
+          const formData = { updateTime, diaryId: readDiary.id, name, openId };
+          const res = await js_way.uploadfile({ url: "videoManagement", filePath: newVideo[i], formData, name });
+          console.log("\u65B0\u89C6\u9891", res);
         }
         for (var i = 0; i < newVideoPhoto.length; i++) {
-          let name = i + myStore.state.userInfo.openId + "" + updateTime;
-          let videoPhotoList = JSON.stringify(myStore.state.readDiary.videoPhoto);
-          common_vendor.index.uploadFile({
-            url: "updateVideo",
-            fileType: "image",
-            filePath: newVideoPhoto[i],
-            formData: { newVideoPhoto: JSON.stringify(newVideoPhoto), videoPhotoList, updateTime, id: myStore.state.readDiary.id, name },
-            name
-          });
+          let name = "videoPhoto" + openId + updateTime;
+          const formData = { updateTime, diaryId: myStore.state.readDiary.id, name, openId };
+          const res = await js_way.uploadfile({ url: "videoPhotoManagement", filePath: newVideo[i], formData, name });
+          console.log("\u65B0\u89C6\u9891\u56FE\u7247", res);
         }
       }
+      if (deleteImage.length > 0)
+        ;
+      if (deleteVideo.length > 0)
+        ;
+      if (deleteVideoPhoto.length > 0)
+        ;
     }
     function getWeather_Mood(e, type) {
       if (type === "weather") {
@@ -303,60 +283,70 @@ const _sfc_main = {
     return (_ctx, _cache) => {
       return common_vendor.e({
         a: common_vendor.unref(operationType) == "save"
-      }, common_vendor.unref(operationType) == "save" ? {} : {}, {
-        b: common_vendor.unref(weather),
-        c: common_vendor.o(($event) => common_vendor.isRef(weather) ? weather.value = $event.detail.value : weather = $event.detail.value),
-        d: common_vendor.p({
+      }, common_vendor.unref(operationType) == "save" ? common_vendor.e({
+        b: !common_vendor.unref(readDiary).editor
+      }, !common_vendor.unref(readDiary).editor ? {
+        c: common_vendor.p({
+          ["show-icon"]: true,
+          scrollable: true,
+          text: "uni-app \u7248\u6B63\u5F0F\u53D1\u5E03\uFF0C\u5F00\u53D1\u4E00\u6B21\uFF0C\u540C\u65F6\u53D1\u5E03iOS\u3001Android\u3001H5\u3001\u5FAE\u4FE1\u5C0F\u7A0B\u5E8F\u3001\u652F\u4ED8\u5B9D\u5C0F\u7A0B\u5E8F\u3001\u767E\u5EA6\u5C0F\u7A0B\u5E8F\u3001\u5934\u6761\u5C0F\u7A0B\u5E8F\u7B497\u5927\u5E73\u53F0\u3002",
+          speed: "70"
+        })
+      } : {}) : {}, {
+        d: common_vendor.unref(weather),
+        e: common_vendor.o(($event) => common_vendor.isRef(weather) ? weather.value = $event.detail.value : weather = $event.detail.value),
+        f: common_vendor.p({
           type: "bottom",
           size: "30",
           color: "gray"
         }),
-        e: _ctx.$store.state.record.weatherList,
-        f: common_vendor.o(($event) => getWeather_Mood($event, "weather")),
-        g: common_vendor.unref(mood),
-        h: common_vendor.o(($event) => common_vendor.isRef(mood) ? mood.value = $event.detail.value : mood = $event.detail.value),
-        i: common_vendor.p({
+        g: _ctx.$store.state.record.weatherList,
+        h: common_vendor.o(($event) => getWeather_Mood($event, "weather")),
+        i: common_vendor.unref(mood),
+        j: common_vendor.o(($event) => common_vendor.isRef(mood) ? mood.value = $event.detail.value : mood = $event.detail.value),
+        k: common_vendor.p({
           type: "bottom",
           size: "30",
           color: "gray"
         }),
-        j: _ctx.$store.state.record.moodList,
-        k: common_vendor.o(($event) => getWeather_Mood($event, "mood")),
-        l: common_vendor.unref(address),
-        m: common_vendor.o(($event) => common_vendor.isRef(address) ? address.value = $event.detail.value : address = $event.detail.value),
-        n: common_vendor.o(getAddress),
-        o: common_vendor.p({
+        l: _ctx.$store.state.record.moodList,
+        m: common_vendor.o(($event) => getWeather_Mood($event, "mood")),
+        n: common_vendor.unref(address),
+        o: common_vendor.o(($event) => common_vendor.isRef(address) ? address.value = $event.detail.value : address = $event.detail.value),
+        p: common_vendor.o(getAddress),
+        q: common_vendor.p({
           type: "location-filled",
           size: "30",
           color: "#cc86d1"
         }),
-        p: common_vendor.unref(operationType) !== "editor"
+        r: common_vendor.unref(operationType) !== "editor"
       }, common_vendor.unref(operationType) !== "editor" ? {
-        q: common_vendor.o(($event) => _ctx.$store.state.record.addTime = $event),
-        r: common_vendor.p({
+        s: common_vendor.o(($event) => _ctx.$store.state.record.addTime = $event),
+        t: common_vendor.p({
           type: "datetime",
           modelValue: _ctx.$store.state.record.addTime
         })
       } : {}, {
-        s: common_vendor.p({
+        v: common_vendor.p({
           title: "\u5982\u9700\u4E0A\u4F20\u56FE\u7247\u89C6\u9891\u8BF7\u70B9\u51FB",
           deleteInco: true,
           operationType: common_vendor.unref(operationType),
           backgroundColor: "#dcffbd"
         }),
-        t: _ctx.$store.state.record.diary && common_vendor.unref(operationType) === "save"
+        w: _ctx.$store.state.record.diary && common_vendor.unref(operationType) === "save"
       }, _ctx.$store.state.record.diary && common_vendor.unref(operationType) === "save" ? {
-        v: common_vendor.o(save)
+        x: common_vendor.o(save)
       } : {}, {
-        w: _ctx.$store.state.readDiary.diary && common_vendor.unref(operationType) === "editor"
+        y: _ctx.$store.state.readDiary.diary && common_vendor.unref(operationType) === "editor"
       }, _ctx.$store.state.readDiary.diary && common_vendor.unref(operationType) === "editor" ? {
-        x: common_vendor.o(update)
+        z: common_vendor.o((...args) => _ctx.deleteDiary && _ctx.deleteDiary(...args)),
+        A: common_vendor.o(update)
       } : {}, {
-        y: common_vendor.s(_ctx.__cssVars()),
-        z: common_vendor.o(focus),
-        A: common_vendor.s(_ctx.__cssVars()),
-        B: common_vendor.unref(diary),
-        C: common_vendor.o(($event) => common_vendor.isRef(diary) ? diary.value = $event.detail.value : diary = $event.detail.value)
+        B: common_vendor.s(_ctx.__cssVars()),
+        C: common_vendor.o(focus),
+        D: common_vendor.s(_ctx.__cssVars()),
+        E: common_vendor.unref(diary),
+        F: common_vendor.o(($event) => common_vendor.isRef(diary) ? diary.value = $event.detail.value : diary = $event.detail.value)
       });
     };
   }

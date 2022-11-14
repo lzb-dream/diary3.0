@@ -10,7 +10,7 @@ const _sfc_main = {
       } else if (i.videoPhoto.length > 0) {
         return `background-image:url(${i.videoPhoto[0]})`;
       } else {
-        return `background:	#FFDEAD`;
+        return `background:	#e9ca9e`;
       }
     }
     function diaryAbstract(i) {

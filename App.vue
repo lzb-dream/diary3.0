@@ -11,6 +11,7 @@ import {request} from "@/js/interceptor.js"
 				index: 1,
 				text: '1'
 			})
+			this.$store.dispatch('readDiary/getUrl')
 			this.$store.commit('getUserInfo')
 			let statusBarHeight = uni.getSystemInfoSync().statusBarHeight
 			console.log(statusBarHeight);

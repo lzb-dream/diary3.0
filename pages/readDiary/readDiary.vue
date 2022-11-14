@@ -23,24 +23,17 @@ import WeatherAndAddress from '@/components/WeatherAndAddress.vue'
 import FilePicker from '@/components/FilePicker.vue'
 import {copy} from '@/js/way.js'
 import {useStore} from 'vuex'
-import { onBeforeMount, watch } from "vue";
 const myStore = useStore()
 const readDiary = myStore.state.readDiary
-console.log(readDiary);
-onBeforeMount(()=>{
-	console.log(readDiary);
-	myStore.commit('readDiary/changeState',{name:'oldWeather',value:readDiary.weather})
-	myStore.commit('readDiary/changeState',{name:'oldMood',value:readDiary.mood})
-	myStore.commit('readDiary/changeState',{name:'oldAddress',value:readDiary.address})
-	myStore.commit('readDiary/changeState',{name:'oldVideo',value: copy(readDiary.video)})
-	myStore.commit('readDiary/changeState',{name:'oldVideoPhoto',value:copy(readDiary.videoPhoto)})
-	myStore.commit('readDiary/changeState',{name:'oldImage',value:copy(readDiary.image)})
-	myStore.commit('readDiary/changeState',{name:'oldDiary',value:readDiary.diary})
-	console.log('oldVideo', readDiary.oldVideo);
-})
-watch(readDiary.video,(nv)=>{
-	console.log('监听',nv);
-})
+
+myStore.commit('readDiary/changeState',{name:'oldWeather',value:readDiary.weather})
+myStore.commit('readDiary/changeState',{name:'oldMood',value:readDiary.mood})
+myStore.commit('readDiary/changeState',{name:'oldAddress',value:readDiary.address})
+myStore.commit('readDiary/changeState',{name:'oldVideo',value: copy(readDiary.video)})
+myStore.commit('readDiary/changeState',{name:'oldVideoPhoto',value:copy(readDiary.videoPhoto)})
+myStore.commit('readDiary/changeState',{name:'oldImage',value:copy(readDiary.image)})
+myStore.commit('readDiary/changeState',{name:'oldDiary',value:readDiary.diary})
+
 // 图片与视频显示
 function mide(){
 	if (readDiary.image||readDiary.video){
@@ -63,6 +56,7 @@ async function editor(){
  
  // 导航栏返回
  function back(){
+	 // 如果用户没有点击更改将用户日记原本的信息还原
 	if(!readDiary.getUserInfo){
 		myStore.commit('readDiary/changeState',{name:'weather',value:readDiary.oldWeather})
 		myStore.commit('readDiary/changeState',{name:'mood',value:readDiary.oldMood})
@@ -72,8 +66,6 @@ async function editor(){
 		myStore.commit('readDiary/putList',{name:'video',value:readDiary.oldVideo})
 		myStore.commit('readDiary/putList',{name:'videoPhoto',value:readDiary.oldVideoPhoto})
 		myStore.commit('readDiary/putList',{name:'image',value:readDiary.oldImage})
-		
-		console.log(readDiary);
 	}
 	
 	uni.switchTab({
@@ -82,6 +74,10 @@ async function editor(){
 			myStore.commit('readDiary/changeState',{name:'editor',value:false})
 		}
 	})
+	// 监听到返回将清空收集的删除内容
+	myStore.commit('readDiary/empty','deleteVideo')
+	myStore.commit('readDiary/empty','deleteVideoPhoto')
+	myStore.commit('readDiary/empty','deleteImage')
  }
 </script>
 
